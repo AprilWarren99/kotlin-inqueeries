@@ -30,7 +30,6 @@ class DbInitializer(val db: Database) {
         val categoryInformation = integer("categoryInformationID").references(Categories.id)
         val otherInformation = varchar("other", 512).nullable()
     }
-
     object Contact: Table("contact"){
         val id = integer("id").autoIncrement().uniqueIndex()
         val name = varchar("Name", 120)
@@ -47,7 +46,6 @@ class DbInitializer(val db: Database) {
         val parking = bool("parking").default(false)
         val accessibleBathroom = bool("accessibleBathroom").default(false)
     }
-
     object Categories: Table("categories_information"){
         val id = integer("id").autoIncrement().uniqueIndex()
 
@@ -121,10 +119,6 @@ class DbInitializer(val db: Database) {
             SchemaUtils.create(Categories)
             SchemaUtils.create(Contact)
             SchemaUtils.create(Organization)
-
-            Categories.insert{
-                it[adultProducts] = false
-            }
         }
     }
 }
