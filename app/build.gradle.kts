@@ -37,6 +37,8 @@ dependencies {
 
 
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
