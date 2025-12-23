@@ -1,11 +1,9 @@
 package org.example.dbInit
 
-import com.google.gson.JsonObject
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
+
 import com.google.gson.Gson
 import com.google.gson.JsonParser
-import com.google.gson.reflect.TypeToken
+
 
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -17,27 +15,13 @@ import org.example.model.Contact
 import org.example.model.Categories
 import java.io.File
 import kotlinx.serialization.*
-import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.select
-import org.jetbrains.exposed.v1.jdbc.update
 
-// Wrapper class to hold the organizations array
-data class OrganizationResponse(
-    @SerialName("organizations")
-    val organizations: List<OrganizationWrapper>
-)
 
-// Wrapper class for each organization
-data class OrganizationWrapper(
-    @SerialName("Document ID")
-    val documentId: String,
 
-    @SerialName("record")
-    val record: Organization
-)
 data class OrganizationRecord(
     @SerialName("org_name") val org_name: String,
     @SerialName("org_postal") val org_postal: String,
@@ -108,20 +92,24 @@ data class OrganizationRecord(
     @SerialName("other_housing") val other_housing: Boolean
 )
 
-class DbInitializer(val db: Database) {
+class DbInitializer(db: Database) {
     init {
         // Run database operations within a transaction
         transaction(db) {
+            println("--------- Re-initializing Database ----------\n\t> Dropping all database tables")
             SchemaUtils.drop(Contact)
             SchemaUtils.drop(Organization)
             SchemaUtils.drop(Categories)
+            println("\t> Recreating database tables")
             SchemaUtils.drop(AccessibilityInformation)
             SchemaUtils.create(AccessibilityInformation)
             SchemaUtils.create(Categories)
             SchemaUtils.create(Organization)
             SchemaUtils.create(Contact)
 
+            println("\t> Adding Firebase data")
             addFirebaseData()
+            println("----- Database initialization completed -----")
         }
     }
 
@@ -147,13 +135,6 @@ class DbInitializer(val db: Database) {
                             try {
                                 if (element.isJsonObject) {
                                     val orgObject = element.asJsonObject
-
-                                    // Extract document ID if it exists
-                                    val documentId = if (orgObject.has("Document ID")) {
-                                        orgObject.get("Document ID").asString
-                                    } else {
-                                        "Unknown"
-                                    }
 
                                     // Extract record if it exists
                                     val recordElement = if (orgObject.has("record")) {

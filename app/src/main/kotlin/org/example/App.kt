@@ -7,21 +7,15 @@ import org.example.dbInit.DbInitializer
 import org.jetbrains.exposed.v1.jdbc.Database
 
 fun main() {
+    val reinitDB = true
+
     try {
         val dbConnection = Database.connect(
             url = System.getenv("dbURL"),
             user = System.getenv("dbUser"),
             password = System.getenv("dbPassword")
         )
-         DbInitializer(dbConnection)
-
-        /*
-        "org_name=Eemaan Art Henna, org_postal=, org_desc=Eemaan Art Henna is a provincial Award-Winning queer& immigrant woman-owned and operated sole proprietorship. They offer henna and temporary body art services& commissioned artwork and consulting services. Eemaan Art Henna takes pride in handcrafting 100% natural& vegan henna paste from scratch& free of any additives or fake dyes. Available for all occasions& including appointments& private/public or corporate events& parties& bridal henna& bridal/baby showers& etc at all locations. The artist is available to travel worldwide for bigger events and destination weddings. All bookings are fully inclusive and insured. We are experienced in delivering educational presentations and demonstrations for a variety of audiences (like schools and corporations) about cultural significance& history of henna and henna safety. Eemaan Art Henna also sells commissioned artwork and decor (such as Christmas ornaments) painted in a “henna-style,” at-home DIY henna supplies& and commissioned drawings for real tattoos., org_socials=https://www.facebook.com/eemaanarthenna https://www.instagram.com/eemaanarthenna , org_province=NL, org_phone=, org_city=, queer_owned=true, org_contact1_name=Eemaan Thind, org_contact1_pronouns=she/her, org_contact1_position=Owner& Operator& Artist, org_contact2_name=, org_contact2_pronouns=, org_contact2_position=, org_website=, org_street_addr=, queer_inclusive=true, extra_other_notes=, access_automatic_doors=false, access_entrance=false, access_gender_neutral_washrooms=false, access_washrooms=false, access_parking=false, cat_education=false, edu_organization=false, edu_post_secondary=false, edu_workshops_training=false, edu_individual=false, edu_remote_online=false, cat_health=false, health_family_doctor=false, health_centre=false, health_physical=false, health_private=false, health_public=false, health_counselor=false, health_mental=false, health_care_provider=false, health_trans=false, health_specialist=false, health_peer_support=false, cat_hospitality=false, hospitality_catering=false, hospitality_cafe=false, hospitality_hotels=false, hospitality_restaurants=false, hospitality_bars=false, hospitality_food_trucks=false, cat_other=false, other_employment=false, other_transportation=false, cat_retail_service=true, retail_groceries=false, retail_clothing=false, retail_legal=false, retail_entertainment=true, retail_digital_services=false, retail_fitness_centre=false, retail_adult_products=false, retail_artist=true, retail_convienience=false, retail_consultant=true, retail_esthetics=false, retail_skilled_trades=false, other_spiritual=false, other_food_security=false, other_housing=false"
-        .split(", ").forEach {
-            val line = it.split('=')
-            println("${line[0]},${line[1]}")
-        }
-        */
+         if(reinitDB) DbInitializer(dbConnection)
     } catch (e: Exception){
         println(e)
     }
