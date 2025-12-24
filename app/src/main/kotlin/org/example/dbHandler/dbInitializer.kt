@@ -1,4 +1,4 @@
-package org.example.dbInit
+package org.example.dbHandler
 
 
 import com.google.gson.Gson
@@ -6,12 +6,10 @@ import com.google.gson.JsonParser
 
 
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
-import org.example.model.Organization
+import org.example.model.OrganizationTable
 import org.example.model.AccessibilityInformation
-import org.example.model.Contact
+import org.example.model.ContactTable
 import org.example.model.Categories
 import java.io.File
 import kotlinx.serialization.*
@@ -95,22 +93,7 @@ data class OrganizationRecord(
 class DbInitializer(db: Database) {
     init {
         // Run database operations within a transaction
-        transaction(db) {
-            println("--------- Re-initializing Database ----------\n\t> Dropping all database tables")
-            SchemaUtils.drop(Contact)
-            SchemaUtils.drop(Organization)
-            SchemaUtils.drop(Categories)
-            println("\t> Recreating database tables")
-            SchemaUtils.drop(AccessibilityInformation)
-            SchemaUtils.create(AccessibilityInformation)
-            SchemaUtils.create(Categories)
-            SchemaUtils.create(Organization)
-            SchemaUtils.create(Contact)
 
-            println("\t> Adding Firebase data")
-            addFirebaseData()
-            println("----- Database initialization completed -----")
-        }
     }
 
     fun addFirebaseData() {
@@ -207,13 +190,13 @@ class DbInitializer(db: Database) {
 
 
                                         // Check if there is already an organization with the current name
-                                        val orgQuery = Organization.select(Organization.id)
-                                            .where{Organization.name eq org.org_name}
+                                        val orgQuery = OrganizationTable.select(OrganizationTable.id)
+                                            .where{OrganizationTable.name eq org.org_name}
                                             .firstOrNull()
 
                                         var orgID = -1
                                         if(orgQuery == null) {
-                                            orgID = Organization.insert {
+                                            orgID = OrganizationTable.insert {
                                                 it[name] = org.org_name
                                                 it[streetAddress] = org.org_street_addr
                                                 it[description] = org.org_desc
@@ -227,49 +210,49 @@ class DbInitializer(db: Database) {
                                                 it[accessibilityInformation] = accessibilityID
                                                 it[categoryInformation] = categoriesID
                                                 it[otherInformation] = org.extra_other_notes
-                                            } get Organization.id
+                                            } get OrganizationTable.id
                                         }else{
-                                            orgID = orgQuery.get(Organization.id)
+                                            orgID = orgQuery.get(OrganizationTable.id)
                                         }
 
-                                        val contact1Record = Contact.select(Contact.id,
-                                            Contact.name,
-                                            Contact.pronouns,
-                                            Contact.position)
-                                            .where {Contact.name eq org.org_contact1_name}
-                                            .andWhere { Contact.pronouns eq org.org_contact1_pronouns }
-                                            .andWhere { Contact.position eq org.org_contact1_position }
+                                        val contact1Record = ContactTable.select(ContactTable.id,
+                                            ContactTable.name,
+                                            ContactTable.pronouns,
+                                            ContactTable.position)
+                                            .where {ContactTable.name eq org.org_contact1_name}
+                                            .andWhere { ContactTable.pronouns eq org.org_contact1_pronouns }
+                                            .andWhere { ContactTable.position eq org.org_contact1_position }
                                             .firstOrNull()
 
-                                        val contact2Record = Contact.select(Contact.id,
-                                            Contact.name,
-                                            Contact.pronouns,
-                                            Contact.position)
-                                            .where { Contact.name eq org.org_contact2_name }
-                                            .andWhere { Contact.pronouns eq org.org_contact2_pronouns }
-                                            .andWhere { Contact.position eq org.org_contact2_position }
+                                        val contact2Record = ContactTable.select(ContactTable.id,
+                                            ContactTable.name,
+                                            ContactTable.pronouns,
+                                            ContactTable.position)
+                                            .where { ContactTable.name eq org.org_contact2_name }
+                                            .andWhere { ContactTable.pronouns eq org.org_contact2_pronouns }
+                                            .andWhere { ContactTable.position eq org.org_contact2_position }
                                             .firstOrNull()
 
                                         if(contact1Record == null && org.org_contact1_name != ""){
-                                            Contact.insert{
+                                            ContactTable.insert{
                                                 it[name] = org.org_contact1_name
                                                 it[organizationID] = orgID
                                                 it[pronouns] = org.org_contact1_pronouns
                                                 it[position] = org.org_contact1_position
                                                 it[directEmail] = null
                                                 it[directPhone] = null
-                                            } get Contact.id
+                                            } get ContactTable.id
                                         }
 
                                         if (contact2Record == null && org.org_contact2_name != ""){
-                                            Contact.insert{
+                                            ContactTable.insert{
                                                 it[organizationID] = orgID
                                                 it[name] = org.org_contact2_name
                                                 it[pronouns] = org.org_contact2_pronouns
                                                 it[position] = org.org_contact2_position
                                                 it[directEmail] = null
                                                 it[directPhone] = null
-                                            } get Contact.id
+                                            } get ContactTable.id
                                         }
                                     }
 

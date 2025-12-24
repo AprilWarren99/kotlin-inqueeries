@@ -2,9 +2,9 @@ package org.example.model
 
 import org.jetbrains.exposed.v1.core.Table
 
-object Contact: Table("contact"){
+object ContactTable: Table("contact"){
     val id = integer("id").autoIncrement().uniqueIndex()
-    val organizationID = integer("organizationID").references(Organization.id).nullable()
+    val organizationID = integer("organizationID").references(OrganizationTable.id)
     val name = varchar("name", 120)
     val pronouns = varchar("pronouns", 30).nullable()
     val position = varchar("position", 120)

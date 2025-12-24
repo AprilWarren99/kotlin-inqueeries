@@ -3,23 +3,168 @@
  */
 package org.example
 
-import org.example.dbInit.DbInitializer
-import org.jetbrains.exposed.v1.jdbc.Database
+import org.example.dbHandler.Handler
+
+import io.ktor.server.netty.*
+import io.ktor.server.routing.*
+import io.ktor.http.*
+import io.ktor.server.engine.*
+import io.ktor.server.html.*
+import io.ktor.server.response.respondText
+import kotlinx.html.*
+import org.example.dataClasses.Contact
+import org.example.dataClasses.Organization
+
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+
+import org.example.model.ContactTable
+import org.example.model.OrganizationTable
+import org.jetbrains.exposed.v1.core.eq
 
 fun main() {
-    val reinitDB = true
+    // Init the database so the model objects can be used
+    Handler(false)
 
-    try {
-        val dbConnection = Database.connect(
-            url = System.getenv("dbURL"),
-            user = System.getenv("dbUser"),
-            password = System.getenv("dbPassword")
-        )
-         if(reinitDB) DbInitializer(dbConnection)
-    } catch (e: Exception){
-        println(e)
-    }
+    embeddedServer(Netty, 8081) {
+        routing {
+            get("/all") {
+                val contacts = mutableListOf<Map<String, String?>>()
+                val organizations = mutableListOf<Map<String, String?>>()
+                transaction {
+                    ContactTable.selectAll().forEach {
+                        contacts.add(
+                            mapOf(
+                                "id" to it[ContactTable.id].toString(),
+                                "organizationID" to it[ContactTable.organizationID].toString(),
+                                "name" to it[ContactTable.name],
+                                "pronouns" to it[ContactTable.pronouns],
+                                "position" to it[ContactTable.position],
+                                "directEmail" to it[ContactTable.directEmail],
+                                "directPhone" to it[ContactTable.directPhone]
+                            )
+                        )
+                    }
+                    OrganizationTable.selectAll().forEach {
+                        organizations.add(
+                            mapOf(
+                                "id" to it[OrganizationTable.id].toString(),
+                                "name" to it[OrganizationTable.name],
+                                "streetAddress" to it[OrganizationTable.streetAddress],
+                                "description" to it[OrganizationTable.description],
+                                "city" to it[OrganizationTable.city],
+                                "phoneNumber" to it[OrganizationTable.phoneNumber],
+                                "province" to it[OrganizationTable.province],
+                                "socialMedia" to it[OrganizationTable.socialMedia],
+                                "website" to it[OrganizationTable.website],
+                                "queerOwned" to it[OrganizationTable.queerOwned].toString(),
+                                "queerInclusive" to it[OrganizationTable.queerInclusive].toString(),
+                                "accessibilityID" to it[OrganizationTable.accessibilityInformation].toString(),
+                                "categoryID" to it[OrganizationTable.categoryInformation].toString()
+                            )
+                        )
+                    }
+                }
+                call.respondHtml(HttpStatusCode.OK) {
+                    head {
+                        title { +"Inqueeries" }
+                    }
+                    body {
+                        h1 { +"Inqueeries Data" }
+                        table {
+                            style ="border-collapse: collapse; border: 1px solid black;"
+                            thead {
+                                tr {
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"ID" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Name" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Street Address" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Description" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Phone Number" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Social Media" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Website" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Queer Owned" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Queer Inclusive" }
+                                    th { style="border: 1px solid black; padding: 8px;"
+                                        +"Other" }
+                                }
+                            }
+                            tbody {
+                                organizations.forEach {
+                                    tr{
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["id"].toString()
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            a("/update/${it["id"]}") { +it["name"].toString() }
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["streetAddress"].toString()
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["description"].toString()
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["phoneNumber"].toString()
+                                        }
+                                        td {
+                                            style ="border: 1px solid black; padding: 8px;"
+                                            +it["province"].toString()
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["socialMedia"].toString()
+                                        }
+                                        td { style = "border: 1px solid black; padding: 8px;"
+                                            +it["website"].toString()
+                                        }
+                                        td { style = "border: 1px solid black; padding: 8px;"
+                                            +it["queerOwned"].toString()
+                                        }
+                                        td {
+                                            style = "border: 1px solid black; padding: 8px;"
+                                            +it["queerInclusive"].toString()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
+            get("/update/{orgID}"){
+                val queryID = call.parameters["orgID"]?.toInt() ?: -1
+                var contactInfo: MutableList<Contact> = mutableListOf()
+                var organizationInfo: Organization? = null
 
+                transaction {
+                    organizationInfo = OrganizationTable.selectAll()
+                        .where { OrganizationTable.id eq queryID }
+                        .map { Organization.fromRow(it) }
+                        .firstOrNull()
+                    ContactTable.selectAll()
+                        .where{ ContactTable.organizationID eq queryID }
+                        .map { Contact.fromRow(it) }
+                        .forEach { contact -> contactInfo.add(contact) }
+                }
+                println(organizationInfo.toString())
 
+                call.respondText{organizationInfo.toString() + "\n\n" + contactInfo.toString()}
+            }
+        }
+    }.start(wait = true)
 }

@@ -1,10 +1,8 @@
 package org.example.model
 
-import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.Table
-import org.jetbrains.exposed.v1.core.isNotNull
 
-object Organization : Table("organizations") {
+object OrganizationTable : Table("organizations") {
     val id = integer("id").autoIncrement().uniqueIndex()
     val name = varchar("name", 128)
     val streetAddress = varchar("streetAddress", 1024).nullable()

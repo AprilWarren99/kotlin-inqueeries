@@ -11,6 +11,8 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     application
+
+    id("io.ktor.plugin") version "3.1.1"
 }
 
 repositories {
@@ -30,15 +32,17 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
+    // Database Dependencies
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
-
     implementation(libs.exposed.dao)
-
-
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+
+    //KTOR dependencies
+    implementation("io.ktor:ktor-server-netty")
+    implementation("io.ktor:ktor-server-html-builder")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
