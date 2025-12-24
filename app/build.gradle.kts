@@ -43,6 +43,9 @@ dependencies {
     //KTOR dependencies
     implementation("io.ktor:ktor-server-netty")
     implementation("io.ktor:ktor-server-html-builder")
+    implementation("io.ktor:ktor-server-core")
+    implementation("io.ktor:ktor-server-host-common")
+    implementation("io.ktor:ktor-server-thymeleaf")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

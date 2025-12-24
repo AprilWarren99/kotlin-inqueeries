@@ -1,0 +1,8 @@
+logging:
+  level:
+    root: INFO                       # keep the default for everything else
+    org.thymeleaf: TRACE             # (or TRACE if you want even more detail)
+
+server:
+  error:
+    include-stacktrace: ALWAYS

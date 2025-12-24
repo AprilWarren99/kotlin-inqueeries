@@ -7,11 +7,19 @@ import org.example.dbHandler.Handler
 
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
-import io.ktor.http.*
+import io.ktor.server.thymeleaf.*
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import io.ktor.server.engine.*
 import io.ktor.server.html.*
-import io.ktor.server.response.respondText
+import io.ktor.server.response.*
+import io.ktor.server.application.*
+import io.ktor.http.content.*
+import io.ktor.server.http.content.files
+import io.ktor.server.http.content.static
+import io.ktor.server.http.content.staticResources
 import kotlinx.html.*
+
+
 import org.example.dataClasses.Contact
 import org.example.dataClasses.Organization
 
@@ -27,7 +35,18 @@ fun main() {
     Handler(false)
 
     embeddedServer(Netty, 8081) {
+        install(Thymeleaf){
+            setTemplateResolver(
+                ClassLoaderTemplateResolver().apply {
+                    prefix = "templates/"
+                    suffix = ".html"
+                    characterEncoding = "utf-8"
+                }
+            )
+        }
+
         routing {
+            staticResources("/static", "static")
             get("/all") {
                 val contacts = mutableListOf<Map<String, String?>>()
                 val organizations = mutableListOf<Map<String, String?>>()
@@ -65,90 +84,13 @@ fun main() {
                         )
                     }
                 }
-                call.respondHtml(HttpStatusCode.OK) {
-                    head {
-                        title { +"Inqueeries" }
-                    }
-                    body {
-                        h1 { +"Inqueeries Data" }
-                        table {
-                            style ="border-collapse: collapse; border: 1px solid black;"
-                            thead {
-                                tr {
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"ID" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Name" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Street Address" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Description" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Phone Number" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Social Media" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Website" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Queer Owned" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Queer Inclusive" }
-                                    th { style="border: 1px solid black; padding: 8px;"
-                                        +"Other" }
-                                }
-                            }
-                            tbody {
-                                organizations.forEach {
-                                    tr{
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["id"].toString()
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            a("/update/${it["id"]}") { +it["name"].toString() }
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["streetAddress"].toString()
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["description"].toString()
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["phoneNumber"].toString()
-                                        }
-                                        td {
-                                            style ="border: 1px solid black; padding: 8px;"
-                                            +it["province"].toString()
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["socialMedia"].toString()
-                                        }
-                                        td { style = "border: 1px solid black; padding: 8px;"
-                                            +it["website"].toString()
-                                        }
-                                        td { style = "border: 1px solid black; padding: 8px;"
-                                            +it["queerOwned"].toString()
-                                        }
-                                        td {
-                                            style = "border: 1px solid black; padding: 8px;"
-                                            +it["queerInclusive"].toString()
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                call.respond(ThymeleafContent("allOrganizations",
+                    mapOf("organizations" to organizations)))
             }
 
             get("/update/{orgID}"){
                 val queryID = call.parameters["orgID"]?.toInt() ?: -1
-                var contactInfo: MutableList<Contact> = mutableListOf()
+                val contactInfo: MutableList<Contact> = mutableListOf()
                 var organizationInfo: Organization? = null
 
                 transaction {
