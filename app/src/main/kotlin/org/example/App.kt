@@ -17,6 +17,7 @@ import io.ktor.http.content.*
 import io.ktor.server.http.content.files
 import io.ktor.server.http.content.static
 import io.ktor.server.http.content.staticResources
+import io.ktor.server.plugins.statuspages.StatusPages
 import kotlinx.html.*
 
 
@@ -43,6 +44,13 @@ fun main() {
                     characterEncoding = "utf-8"
                 }
             )
+        }
+
+        install(StatusPages) {
+            exception<Throwable> { call, cause ->
+                call.application.environment.log.error("Request failed", cause)
+                call.respondText("Something went wrong\n$cause")
+            }
         }
 
         routing {

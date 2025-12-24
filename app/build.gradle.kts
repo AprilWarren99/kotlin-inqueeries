@@ -46,6 +46,7 @@ dependencies {
     implementation("io.ktor:ktor-server-core")
     implementation("io.ktor:ktor-server-host-common")
     implementation("io.ktor:ktor-server-thymeleaf")
+    implementation("io.ktor:ktor-server-status-pages")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
