@@ -1,6 +1,7 @@
 package org.example.model
 
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.*
 
 object OrganizationTable : Table("organizations") {
     val id = integer("id").autoIncrement().uniqueIndex()
@@ -17,4 +18,5 @@ object OrganizationTable : Table("organizations") {
     val accessibilityInformation = integer("accessibilityInformationID").references(AccessibilityInformation.id)
     val categoryInformation = integer("categoryInformationID").references(Categories.id)
     val otherInformation = varchar("other", 512).nullable()
+    val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
 }

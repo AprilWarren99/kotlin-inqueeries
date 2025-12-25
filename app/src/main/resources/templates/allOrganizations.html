@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Inqueeries</title>
-    <link rel="stylesheet" href="/static/css/styles.css"/>
+    <link rel="stylesheet" th:href="@{{baseurl}/static/css/styles.css(baseurl=${baseurl})}"/>
 </head>
 <body>
     <h1>All Organizations</h1>
@@ -11,34 +11,38 @@
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Street Address</th>
                 <th>Description</th>
+                <th>Street Address</th>
+                <th>City</th>
+                <th>Province</th>
                 <th>Phone Number</th>
                 <th>Social Media</th>
                 <th>Website</th>
                 <th>Queer Owned</th>
                 <th>Queer Inclusive</th>
                 <th>Other</th>
+                <th>Last Update</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="org: ${organizations}">
                 <td th:text="${org.id}"></td>
                 <td>
-                    <a
+                    <a th:href="@{{baseurl}/update/{id}(id=${org.id},baseurl=${baseurl})}"
                        th:text="${org.name}"></a>
                 </td>
-                <td th:text="${org.streetAddress}"></td>
                 <td th:text="${org.description}"></td>
+                <td th:text="${org.streetAddress}"></td>
                 <td th:text="${org.city}"></td>
-                <td th:text="${org.phoneNumber}"></td>
                 <td th:text="${org.province}"></td>
+                <td th:text="${org.phoneNumber}"></td>
                 <td th:text="${org.socialMedia}"></td>
                 <td th:text="${org.website}"></td>
                 <td th:text="${org.queerOwned}"></td>
                 <td th:text="${org.queerInclusive}"></td>
                 <td th:text="${org.accessibilityID}"></td>
                 <td th:text="${org.categoryID}"></td>
+                <td th:text="${org.lastUpdate}"></td>
 
             </tr>
         </tbody>

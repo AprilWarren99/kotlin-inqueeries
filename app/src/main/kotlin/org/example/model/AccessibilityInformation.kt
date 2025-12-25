@@ -1,6 +1,8 @@
 package org.example.model
 
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.CurrentDateTime
+import org.jetbrains.exposed.v1.javatime.datetime
 
 object AccessibilityInformation: Table("accessibility_information") {
     val id = integer("id").autoIncrement().uniqueIndex()
@@ -9,4 +11,6 @@ object AccessibilityInformation: Table("accessibility_information") {
     val genderNeutralBathroom = bool("genderNeutralBathroom").default(false)
     val parking = bool("parking").default(false)
     val accessibleBathroom = bool("accessibleBathroom").default(false)
+
+    val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
 }

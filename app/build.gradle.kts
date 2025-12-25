@@ -36,6 +36,8 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.dao)
+    implementation(libs.exposed.datetime)
+    implementation(libs.exposed.javadatetime)
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")

@@ -1,6 +1,8 @@
 package org.example.model
 
 import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.javatime.CurrentDateTime
+import org.jetbrains.exposed.v1.javatime.datetime
 
 object Categories: Table("categories_information"){
     val id = integer("id").autoIncrement().uniqueIndex()
@@ -62,4 +64,6 @@ object Categories: Table("categories_information"){
     val housing = bool("housing").default(false)
     val spiritual = bool("spiritual").default(false)
     val transportation = bool("transportation").default(false)
+
+    val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
 }

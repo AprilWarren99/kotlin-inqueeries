@@ -1,8 +1,8 @@
 package org.example.dataClasses
 
 import org.example.model.ContactTable
-import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.ResultRow
+import java.time.LocalDateTime
 
 data class Contact(
     val id: Int,
@@ -12,6 +12,7 @@ data class Contact(
     val position: String,
     val directEmail: String?,
     val directPhone: String?,
+    val lastUpdate: LocalDateTime,
 ){
     companion object{
         fun fromRow(resultRow: ResultRow) = Contact(
@@ -21,7 +22,8 @@ data class Contact(
             pronouns = resultRow[ContactTable.pronouns],
             position = resultRow[ContactTable.position],
             directEmail = resultRow[ContactTable.directEmail],
-            directPhone = resultRow[ContactTable.directPhone]
+            directPhone = resultRow[ContactTable.directPhone],
+            lastUpdate = resultRow[ContactTable.lastUpdate]
         )
     }
 }

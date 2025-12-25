@@ -17,6 +17,7 @@ import io.ktor.http.content.*
 import io.ktor.server.http.content.files
 import io.ktor.server.http.content.static
 import io.ktor.server.http.content.staticResources
+import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
 import kotlinx.html.*
 
@@ -33,10 +34,12 @@ import org.jetbrains.exposed.v1.core.eq
 
 fun main() {
     // Init the database so the model objects can be used
-    Handler(false)
+    Handler(true)
+    val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
-        install(Thymeleaf){
+        // in your Application.module()
+        install(Thymeleaf) {
             setTemplateResolver(
                 ClassLoaderTemplateResolver().apply {
                     prefix = "templates/"
@@ -93,7 +96,10 @@ fun main() {
                     }
                 }
                 call.respond(ThymeleafContent("allOrganizations",
-                    mapOf("organizations" to organizations)))
+                    mapOf(
+                        "organizations" to organizations,
+                        "baseurl" to baseurl
+                    )))
             }
 
             get("/update/{orgID}"){
@@ -111,7 +117,6 @@ fun main() {
                         .map { Contact.fromRow(it) }
                         .forEach { contact -> contactInfo.add(contact) }
                 }
-                println(organizationInfo.toString())
 
                 call.respondText{organizationInfo.toString() + "\n\n" + contactInfo.toString()}
             }
