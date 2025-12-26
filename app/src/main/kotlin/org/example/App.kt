@@ -34,7 +34,7 @@ import org.jetbrains.exposed.v1.core.eq
 
 fun main() {
     // Init the database so the model objects can be used
-    Handler(true)
+    Handler(false)
     val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
@@ -80,6 +80,7 @@ fun main() {
                             mapOf(
                                 "id" to it[OrganizationTable.id].toString(),
                                 "name" to it[OrganizationTable.name],
+                                "email" to it[OrganizationTable.email],
                                 "streetAddress" to it[OrganizationTable.streetAddress],
                                 "description" to it[OrganizationTable.description],
                                 "city" to it[OrganizationTable.city],
@@ -118,7 +119,21 @@ fun main() {
                         .forEach { contact -> contactInfo.add(contact) }
                 }
 
-                call.respondText{organizationInfo.toString() + "\n\n" + contactInfo.toString()}
+                if(organizationInfo != null) {
+                    val orgInfo = organizationInfo as Organization
+                    call.respond(
+                        ThymeleafContent(
+                            "updateOrganization.html",
+                            mapOf(
+                                "organization" to orgInfo,
+                                "contacts" to contactInfo,
+                                "baseurl" to baseurl
+                            )
+                        )
+                    )
+                } else {
+                    call.respondText{"Couldn't get organization info"}
+                }
             }
         }
     }.start(wait = true)

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Inquiries</title>
+    <!-- Corrected link syntax -->
+    <link rel="stylesheet" th:href="@{{baseurl}/static/css/styles.css(baseurl=${baseurl})}"/>
+</head>
+<body>
+<h1 th:text="${organization.name}"></h1>
+
+<!-- 1️⃣  Bind the whole form to the Organization bean -->
+<form th:action="@{${baseurl}/organization/update}"
+      method="post">
+
+    <fieldset th:object="${organization}">
+        <legend>Organization Data</legend>
+
+        <!-- 2️⃣  Use plain 'th:value' for simple inputs -->
+        <label for="bname">Business Name: </label>
+        <input type="text" id="bname" name="bname"
+               th:value="*{name}"><br/>
+
+        <label for="bdescription">Description: </label>
+        <textarea id="bdescription" name="bdescription" rows="6" cols="90"
+                  th:utext="*{description}"></textarea><br/>
+
+        <label for="bstreetaddress">Street Address: </label>
+        <input type="text" id="bstreetaddress" name="bstreetaddress"
+               th:value="*{streetaddress}"><br/>
+
+        <label for="bcity">City: </label>
+        <input type="text" id="bcity" name="bcity"
+               th:value="*{city}"><br/>
+
+        <label for="bprovince">Province: </label>
+        <input type="text" id="bprovince" name="bprovince"
+               th:value="*{province}"><br/>
+
+        <label for="bphone">Phone: </label>
+        <input type="text" id="bphone" name="bphone"
+               th:value="*{phoneNumber}"><br/>
+
+        <label for="bemail">Email: </label>
+        <input type="text" id="bemail" name="bemail"
+               th:value="*{email}"><br/>
+
+        <label for="bwebsite">Website: </label>
+        <input type="text" id="bwebsite" name="bwebsite"
+               th:value="*{website}"><br/>
+
+        <label for="bsocials">Social Media: </label>
+        <input type="text" id="bsocials" name="bsocials"
+               th:value="*{socialMedia}"><br/>
+
+        <!-- 4️⃣  Radio buttons – keep your original logic -->
+        <label>Queer Owned: </label>
+        <label>
+            <input type="radio" th:value="true" name="queerOwned"
+                   th:checked="*{queerOwned == true}" /> Yes
+        </label>
+        <label>
+            <input type="radio" th:value="false" name="queerOwned"
+                   th:checked="*{queerOwned == false}" /> No
+        </label><br/>
+
+        <label>Queer Inclusive: </label>
+        <label>
+            <input type="radio" th:value="true" name="queerInclusive"
+                   th:checked="*{queerInclusive == true}" /> Yes
+        </label>
+        <label>
+            <input type="radio" th:value="false" name="queerInclusive"
+                   th:checked="*{queerInclusive == false}" /> No
+        </label><br/>
+
+        <label for="otherNotes">Other Notes: </label>
+        <input type="text" id="otherNotes" name="otherInformation"
+               th:value="*{otherInformation}"/><br/>
+
+        <button type="submit">Save</button>
+    </fieldset>
+</form>
+</body>
+</html>

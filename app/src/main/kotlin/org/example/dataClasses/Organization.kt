@@ -7,6 +7,7 @@ data class Organization(
     val id: Int,
     val name: String,
     val description: String?,
+    val email: String?,
     val streetAddress: String?,
     val city: String?,
     val province: String?,
@@ -23,6 +24,7 @@ data class Organization(
         fun fromRow(resultRow: ResultRow) = Organization(
             id = resultRow[OrganizationTable.id],
             name = resultRow[OrganizationTable.name],
+            email = resultRow[OrganizationTable.email],
             description = resultRow[OrganizationTable.description],
             streetAddress = resultRow[OrganizationTable.streetAddress],
             city = resultRow[OrganizationTable.city],

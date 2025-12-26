@@ -6,8 +6,9 @@ import org.jetbrains.exposed.v1.javatime.*
 object OrganizationTable : Table("organizations") {
     val id = integer("id").autoIncrement().uniqueIndex()
     val name = varchar("name", 128)
-    val streetAddress = varchar("streetAddress", 1024).nullable()
     val description = text("description").nullable()
+    val email = varchar("email", 128).nullable()
+    val streetAddress = varchar("streetAddress", 1024).nullable()
     val city = varchar("city", 128).nullable()
     val province = varchar("province", 2).nullable()
     val phoneNumber = varchar("phoneNumber", 12).nullable()
