@@ -108,14 +108,14 @@ fun main() {
                             .map { Organization.fromRow(it) }
                             .firstOrNull()
 
-                        println(organizationInfo) //this prints a value
+                        // println(organizationInfo)
 
                         ContactTable.selectAll()
                             .where { ContactTable.organizationID eq queryID }
                             .forEach { contact ->
                                 try {
                                     val contactFromRow = Contact.fromRow(contact)
-                                    contactInfo.add(contactFromRow) // Add to contactInfo
+                                    contactInfo.add(contactFromRow)
                                 } catch (e: Exception) {
                                     println("Error in Contact.fromRow: ${e.message}")
                                 }
@@ -129,7 +129,7 @@ fun main() {
                         call.respondText { "Couldn't get organization info" }
                     }
                 }catch(e: Exception) {
-                    println("Error: ${e.message}") // Catch and print any exception
+                    println("Error: ${e.message}")
                     call.respondText { "An error occurred: ${e.message}" }
                 }
 
