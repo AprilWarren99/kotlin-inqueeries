@@ -10,7 +10,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.example.model.OrganizationTable
 import org.example.model.AccessibilityInformation
 import org.example.model.ContactTable
-import org.example.model.Categories
+import org.example.model.CategoriesTable
 import java.io.File
 import kotlinx.serialization.*
 import org.jetbrains.exposed.v1.core.eq
@@ -137,7 +137,7 @@ class DbInitializer(db: Database) {
                                             it[accessibleBathroom] = org.access_washrooms
                                         } get AccessibilityInformation.id
 
-                                        val categoriesID = Categories.insert {
+                                        val categoriesID = CategoriesTable.insert {
                                             it[isEducation] = org.cat_education
                                             it[individual] = org.edu_individual
                                             it[organization] = org.edu_organization
@@ -186,7 +186,7 @@ class DbInitializer(db: Database) {
                                             it[housing] = org.other_housing
                                             it[spiritual] = org.other_spiritual
                                             it[transportation] = org.other_transportation
-                                        } get Categories.id
+                                        } get CategoriesTable.id
 
 
                                         // Check if there is already an organization with the current name

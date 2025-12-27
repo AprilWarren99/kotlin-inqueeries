@@ -4,7 +4,7 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.javatime.CurrentDateTime
 import org.jetbrains.exposed.v1.javatime.datetime
 
-object Categories: Table("categories_information"){
+object CategoriesTable: Table("categories_information"){
     val id = integer("id").autoIncrement().uniqueIndex()
 
     //education

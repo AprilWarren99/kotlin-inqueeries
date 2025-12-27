@@ -2,16 +2,11 @@ package org.example.dbHandler
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.example.model.AccessibilityInformation
-import org.example.model.Categories
+import org.example.model.CategoriesTable
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -37,11 +32,11 @@ class Handler (reinitDB: Boolean = false){
             println("--------- Re-initializing Database ----------\n\t> Dropping all database tables")
             SchemaUtils.drop(ContactTable)
             SchemaUtils.drop(OrganizationTable)
-            SchemaUtils.drop(Categories)
+            SchemaUtils.drop(CategoriesTable)
             SchemaUtils.drop(AccessibilityInformation)
             println("\t> Recreating database tables")
             SchemaUtils.create(AccessibilityInformation)
-            SchemaUtils.create(Categories)
+            SchemaUtils.create(CategoriesTable)
             SchemaUtils.create(OrganizationTable)
             SchemaUtils.create(ContactTable)
 
@@ -91,7 +86,7 @@ class Handler (reinitDB: Boolean = false){
                                         it[accessibleBathroom] = org.access_washrooms
                                     } get AccessibilityInformation.id
 
-                                    val categoriesID = Categories.insert {
+                                    val categoriesID = CategoriesTable.insert {
                                         it[isEducation] = org.cat_education
                                         it[individual] = org.edu_individual
                                         it[organization] = org.edu_organization
@@ -140,7 +135,7 @@ class Handler (reinitDB: Boolean = false){
                                         it[housing] = org.other_housing
                                         it[spiritual] = org.other_spiritual
                                         it[transportation] = org.other_transportation
-                                    } get Categories.id
+                                    } get CategoriesTable.id
 
 
                                     // Check if there is already an organization with the current name

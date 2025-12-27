@@ -17,7 +17,7 @@ object OrganizationTable : Table("organizations") {
     val queerOwned = bool("queerOwned").default(false)
     val queerInclusive = bool("queerInclusive").default(false)
     val accessibilityInformation = integer("accessibilityInformationID").references(AccessibilityInformation.id)
-    val categoryInformation = integer("categoryInformationID").references(Categories.id)
+    val categoryInformation = integer("categoryInformationID").references(CategoriesTable.id)
     val otherInformation = varchar("other", 512).nullable()
     val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
 }
