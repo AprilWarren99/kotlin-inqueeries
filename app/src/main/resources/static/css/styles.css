@@ -27,3 +27,14 @@ table, th, td {
 th, td{
     padding: 2px 4px 2px 4px;
 }
+.update-form-business-data{
+    width: auto;
+}
+.update-form-contact{
+    height: min-content;
+    width: auto;
+}
+
+@media (min-width: 600px){
+
+}

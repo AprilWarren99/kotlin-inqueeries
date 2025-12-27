@@ -6,10 +6,10 @@ import org.example.htmx.insertHead
 import org.example.htmx.insertHeader
 
 
-fun HTML.allOrganizationsPage(orgs: List<Map<String, String?>>){
+fun HTML.allOrganizationsPage(orgs: List<Map<String, String?>>, path: String){
     insertHead()
     body{
-        insertHeader("Organizations")
+        insertHeader(path, "Organizations")
         insertBody(orgs)
     }
 }

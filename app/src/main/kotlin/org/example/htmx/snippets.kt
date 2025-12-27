@@ -13,8 +13,15 @@ fun HTML.insertHead() {
     }
 }
 
- fun FlowContent.insertHeader(path: String){
+ fun FlowContent.insertHeader(path: String, heading: String){
+     a(href="/"){
+         img(src="/static/images/QRLogo2_nobg.svg"){
+             style = "float: inline-start;"
+             width = "76px"
+         }
+     }
     h1{
-        +path
+        style="text-align: center;"
+        +heading
     }
 }

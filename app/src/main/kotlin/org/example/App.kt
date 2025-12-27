@@ -3,6 +3,7 @@
  */
 package org.example
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
 import org.example.dbHandler.Handler
 
@@ -11,9 +12,13 @@ import io.ktor.server.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.html.respondHtml
+import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.websocket.WebSocketDeflateExtension.Companion.install
+import io.ktor.server.request.path
+import io.ktor.utils.io.ExperimentalKtorApi
+import kotlinx.html.*
+import kotlinx.html.stream.createHTML
 
 
 import org.example.dataClasses.Contact
@@ -27,12 +32,12 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.select
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalKtorApi::class)
 fun main() {
     // Init the database so the model objects can be used
-    Handler(true)
+    Handler(false)
     val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
@@ -93,7 +98,8 @@ fun main() {
                         )
                     }
                 }
-                call.respondHtml { allOrganizationsPage(organizations) }
+                call.respondHtml { allOrganizationsPage(organizations,
+                    call.request.path()) }
             }
 
             get("/update/{orgID}") {
@@ -108,8 +114,6 @@ fun main() {
                             .map { Organization.fromRow(it) }
                             .firstOrNull()
 
-                        // println(organizationInfo)
-
                         ContactTable.selectAll()
                             .where { ContactTable.organizationID eq queryID }
                             .forEach { contact ->
@@ -123,16 +127,42 @@ fun main() {
                     }
 
                     if (organizationInfo != null) {
-                        println("Calling responder") //this doesnt print
-                        call.respondHtml { updateOrganizationPage(organizationInfo as Organization, contactInfo) }
+                        call.respondHtml {
+                            updateOrganizationPage(
+                                organizationInfo as Organization,
+                                contactInfo,
+                                call.request.path()
+                            )
+                        }
                     } else {
                         call.respondText { "Couldn't get organization info" }
                     }
-                }catch(e: Exception) {
+                } catch (e: Exception) {
                     println("Error: ${e.message}")
                     call.respondText { "An error occurred: ${e.message}" }
                 }
-
+            }
+            hx.get("/update/get-new-contact-form"){
+                call.respondText { """
+                        <fieldset class="update-form-contact">
+                            <legend>New Contact</legend>
+                            <label for="newName">Name:</label>
+                            <input type="text" name="newName" id="newName">
+                            <br/>
+                            <label for="newPronouns">Pronouns:</label>
+                            <input type="text" name="newPronouns" id="newPronouns">
+                            <br/>
+                            <label for="newPosition">Position:</label>
+                            <input type="text" name="newPosition" id="newPosition">
+                            <br/>
+                            <label for="newEmail">Direct Email:</label>
+                            <input type="text" name="newEmail" id="newEmail">
+                            <br/>
+                            <label for="newPhone">Direct Phone:</label>
+                            <input type="text" name="newPhone" id="newPhone">                            
+                        </fieldset>
+                    """.trimIndent()
+                }
             }
         }
     }.start(wait = true)
