@@ -1,7 +1,7 @@
 package org.example.dataClasses
-
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.ResultRow
+import java.time.LocalDateTime
 
 data class Organization(
     val id: Int,
@@ -19,6 +19,7 @@ data class Organization(
     val accessibilityInformation: Int,
     val categoryInformation: Int,
     val otherInformation: String?,
+    val lastUpdate: LocalDateTime
 ){
     companion object{
         fun fromRow(resultRow: ResultRow) = Organization(
@@ -36,7 +37,8 @@ data class Organization(
             queerInclusive = resultRow[OrganizationTable.queerInclusive],
             accessibilityInformation = resultRow[OrganizationTable.accessibilityInformation],
             categoryInformation = resultRow[OrganizationTable.categoryInformation],
-            otherInformation = resultRow[OrganizationTable.otherInformation]
+            otherInformation = resultRow[OrganizationTable.otherInformation],
+            lastUpdate = resultRow[OrganizationTable.lastUpdate] // Added this line
         )
     }
 }

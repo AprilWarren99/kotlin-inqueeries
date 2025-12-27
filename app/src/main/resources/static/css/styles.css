@@ -1,15 +1,29 @@
-html, input, textarea{
+*{
+    line-height: 1.5
+}
+
+html{
     background-color: #0f0f0f;
 }
 
-p, td, th, h1, label, input, textarea, legend{
+p, td, th, h1, label, legend{
     color: white;
 }
 
+input, textarea{
+    background-color: white
+    color: black;
+    margin-left: 5px;
+}
+
 table {
-  border-collapse: collapse;
+    border-collapse: collapse;
 }
 
 table, th, td {
-  border: 1px solid white;
+    border: 1px solid white;
+}
+
+th, td{
+    padding: 2px 4px 2px 4px;
 }

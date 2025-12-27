@@ -3,27 +3,23 @@
  */
 package org.example
 
+import io.ktor.server.application.install
 import org.example.dbHandler.Handler
 
 import io.ktor.server.netty.*
 import io.ktor.server.routing.*
-import io.ktor.server.thymeleaf.*
-import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import io.ktor.server.engine.*
-import io.ktor.server.html.*
 import io.ktor.server.response.*
-import io.ktor.server.application.*
-import io.ktor.http.content.*
-import io.ktor.server.http.content.files
-import io.ktor.server.http.content.static
+import io.ktor.server.html.respondHtml
 import io.ktor.server.http.content.staticResources
-import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
-import kotlinx.html.*
+import io.ktor.websocket.WebSocketDeflateExtension.Companion.install
 
 
 import org.example.dataClasses.Contact
 import org.example.dataClasses.Organization
+import org.example.htmx.pages.allOrganizationsPage
+import org.example.htmx.pages.updateOrganizationPage
 
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -31,23 +27,15 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.select
+import java.time.format.DateTimeFormatter
 
 fun main() {
     // Init the database so the model objects can be used
-    Handler(false)
+    Handler(true)
     val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
-        // in your Application.module()
-        install(Thymeleaf) {
-            setTemplateResolver(
-                ClassLoaderTemplateResolver().apply {
-                    prefix = "templates/"
-                    suffix = ".html"
-                    characterEncoding = "utf-8"
-                }
-            )
-        }
 
         install(StatusPages) {
             exception<Throwable> { call, cause ->
@@ -56,11 +44,15 @@ fun main() {
             }
         }
 
+
         routing {
             staticResources("/static", "static")
+
             get("/all") {
                 val contacts = mutableListOf<Map<String, String?>>()
                 val organizations = mutableListOf<Map<String, String?>>()
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
                 transaction {
                     ContactTable.selectAll().forEach {
                         contacts.add(
@@ -76,6 +68,10 @@ fun main() {
                         )
                     }
                     OrganizationTable.selectAll().forEach {
+                        val lastUpdate = it[OrganizationTable.lastUpdate]
+                        val formattedLastUpdate = lastUpdate.format(formatter) ?: "N/A"  // Format the lastUpdate or default to "N/A"
+
+
                         organizations.add(
                             mapOf(
                                 "id" to it[OrganizationTable.id].toString(),
@@ -91,49 +87,52 @@ fun main() {
                                 "queerOwned" to it[OrganizationTable.queerOwned].toString(),
                                 "queerInclusive" to it[OrganizationTable.queerInclusive].toString(),
                                 "accessibilityID" to it[OrganizationTable.accessibilityInformation].toString(),
-                                "categoryID" to it[OrganizationTable.categoryInformation].toString()
+                                "categoryID" to it[OrganizationTable.categoryInformation].toString(),
+                                "lastUpdate" to formattedLastUpdate
                             )
                         )
                     }
                 }
-                call.respond(ThymeleafContent("allOrganizations",
-                    mapOf(
-                        "organizations" to organizations,
-                        "baseurl" to baseurl
-                    )))
+                call.respondHtml { allOrganizationsPage(organizations) }
             }
 
-            get("/update/{orgID}"){
-                val queryID = call.parameters["orgID"]?.toInt() ?: -1
-                val contactInfo: MutableList<Contact> = mutableListOf()
-                var organizationInfo: Organization? = null
+            get("/update/{orgID}") {
+                try {
+                    val queryID = call.parameters["orgID"]?.toInt() ?: -1
+                    val contactInfo: MutableList<Contact> = mutableListOf()
+                    var organizationInfo: Organization? = null
 
-                transaction {
-                    organizationInfo = OrganizationTable.selectAll()
-                        .where { OrganizationTable.id eq queryID }
-                        .map { Organization.fromRow(it) }
-                        .firstOrNull()
-                    ContactTable.selectAll()
-                        .where{ ContactTable.organizationID eq queryID }
-                        .map { Contact.fromRow(it) }
-                        .forEach { contact -> contactInfo.add(contact) }
+                    transaction {
+                        organizationInfo = OrganizationTable
+                            .selectAll()
+                            .map { Organization.fromRow(it) }
+                            .firstOrNull()
+
+                        println(organizationInfo) //this prints a value
+
+                        ContactTable.selectAll()
+                            .where { ContactTable.organizationID eq queryID }
+                            .forEach { contact ->
+                                try {
+                                    val contactFromRow = Contact.fromRow(contact)
+                                    contactInfo.add(contactFromRow) // Add to contactInfo
+                                } catch (e: Exception) {
+                                    println("Error in Contact.fromRow: ${e.message}")
+                                }
+                            }
+                    }
+
+                    if (organizationInfo != null) {
+                        println("Calling responder") //this doesnt print
+                        call.respondHtml { updateOrganizationPage(organizationInfo as Organization, contactInfo) }
+                    } else {
+                        call.respondText { "Couldn't get organization info" }
+                    }
+                }catch(e: Exception) {
+                    println("Error: ${e.message}") // Catch and print any exception
+                    call.respondText { "An error occurred: ${e.message}" }
                 }
 
-                if(organizationInfo != null) {
-                    val orgInfo = organizationInfo as Organization
-                    call.respond(
-                        ThymeleafContent(
-                            "updateOrganization.html",
-                            mapOf(
-                                "organization" to orgInfo,
-                                "contacts" to contactInfo,
-                                "baseurl" to baseurl
-                            )
-                        )
-                    )
-                } else {
-                    call.respondText{"Couldn't get organization info"}
-                }
             }
         }
     }.start(wait = true)
