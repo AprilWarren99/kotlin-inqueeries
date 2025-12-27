@@ -2,7 +2,7 @@ package org.example.dbHandler
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
-import org.example.model.AccessibilityInformation
+import org.example.model.AccessibilityInformationTable
 import org.example.model.CategoriesTable
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
@@ -33,9 +33,9 @@ class Handler (reinitDB: Boolean = false){
             SchemaUtils.drop(ContactTable)
             SchemaUtils.drop(OrganizationTable)
             SchemaUtils.drop(CategoriesTable)
-            SchemaUtils.drop(AccessibilityInformation)
+            SchemaUtils.drop(AccessibilityInformationTable)
             println("\t> Recreating database tables")
-            SchemaUtils.create(AccessibilityInformation)
+            SchemaUtils.create(AccessibilityInformationTable)
             SchemaUtils.create(CategoriesTable)
             SchemaUtils.create(OrganizationTable)
             SchemaUtils.create(ContactTable)
@@ -78,13 +78,13 @@ class Handler (reinitDB: Boolean = false){
                                 if (recordElement.isJsonObject) {
                                     val org = gson.fromJson(recordElement, OrganizationRecord::class.java)
 
-                                    val accessibilityID = AccessibilityInformation.insert {
+                                    val accessibilityID = AccessibilityInformationTable.insert {
                                         it[entrance] = org.access_entrance
                                         it[automaticDoors] = org.access_automatic_doors
                                         it[genderNeutralBathroom] = org.access_gender_neutral_washrooms
                                         it[parking] = org.access_parking
                                         it[accessibleBathroom] = org.access_washrooms
-                                    } get AccessibilityInformation.id
+                                    } get AccessibilityInformationTable.id
 
                                     val categoriesID = CategoriesTable.insert {
                                         it[isEducation] = org.cat_education

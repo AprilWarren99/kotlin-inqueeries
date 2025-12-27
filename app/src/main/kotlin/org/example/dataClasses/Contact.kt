@@ -1,7 +1,6 @@
 package org.example.dataClasses
 
 import org.example.model.ContactTable
-import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.ResultRow
 import java.time.LocalDateTime
 

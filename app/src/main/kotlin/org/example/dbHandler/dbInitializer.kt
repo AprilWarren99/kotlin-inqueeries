@@ -8,7 +8,7 @@ import com.google.gson.JsonParser
 import org.jetbrains.exposed.v1.jdbc.Database
 
 import org.example.model.OrganizationTable
-import org.example.model.AccessibilityInformation
+import org.example.model.AccessibilityInformationTable
 import org.example.model.ContactTable
 import org.example.model.CategoriesTable
 import java.io.File
@@ -129,13 +129,13 @@ class DbInitializer(db: Database) {
                                     if (recordElement.isJsonObject) {
                                         val org = gson.fromJson(recordElement, OrganizationRecord::class.java)
 
-                                        val accessibilityID = AccessibilityInformation.insert {
+                                        val accessibilityID = AccessibilityInformationTable.insert {
                                             it[entrance] = org.access_entrance
                                             it[automaticDoors] = org.access_automatic_doors
                                             it[genderNeutralBathroom] = org.access_gender_neutral_washrooms
                                             it[parking] = org.access_parking
                                             it[accessibleBathroom] = org.access_washrooms
-                                        } get AccessibilityInformation.id
+                                        } get AccessibilityInformationTable.id
 
                                         val categoriesID = CategoriesTable.insert {
                                             it[isEducation] = org.cat_education

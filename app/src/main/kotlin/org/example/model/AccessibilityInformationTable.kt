@@ -1,10 +1,9 @@
 package org.example.model
 
 import org.jetbrains.exposed.v1.core.Table
-import org.jetbrains.exposed.v1.javatime.CurrentDateTime
-import org.jetbrains.exposed.v1.javatime.datetime
+import org.jetbrains.exposed.v1.javatime.*
 
-object AccessibilityInformation: Table("accessibility_information") {
+object AccessibilityInformationTable: Table("accessibility_information") {
     val id = integer("id").autoIncrement().uniqueIndex()
     val automaticDoors = bool("automaticDoors").default(false)
     val entrance = bool("entrance").default(false)
