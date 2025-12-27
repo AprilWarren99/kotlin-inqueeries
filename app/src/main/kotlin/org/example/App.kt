@@ -3,7 +3,6 @@
  */
 package org.example
 
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
 import org.example.dbHandler.Handler
 
@@ -18,7 +17,6 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.html.*
-import kotlinx.html.stream.createHTML
 
 
 import org.example.dataClasses.Contact
@@ -161,6 +159,7 @@ fun main() {
                             <label for="newPhone">Direct Phone:</label>
                             <input type="text" name="newPhone" id="newPhone">                            
                         </fieldset>
+                        <div id="contactFormContainer"></div>
                     """.trimIndent()
                 }
             }
