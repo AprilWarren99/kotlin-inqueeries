@@ -40,5 +40,27 @@ data class Organization(
             otherInformation = resultRow[OrganizationTable.otherInformation],
             lastUpdate = resultRow[OrganizationTable.lastUpdate] // Added this line
         )
+
+        fun fromMap(data: Map<String, Any?>): Organization{
+
+            return Organization(
+                id = data["id"] as? Int ?: throw IllegalArgumentException("Missing id"),
+                name = data["name"] as? String ?: throw IllegalArgumentException("Missing name"),
+                email = data["email"] as? String,
+                description = data["description"] as? String,
+                streetAddress = data["streetAddress"] as? String,
+                city = data["city"] as? String,
+                province = data["province"] as? String,
+                phoneNumber = data["phoneNumber"] as? String,
+                socialMedia = data["socialMedia"] as? String,
+                website = data["website"] as? String,
+                queerOwned = data["queerOwned"] == "on",
+                queerInclusive = data["queerInclusive"] == "on",
+                accessibilityInformation = data["accessibilityInformation"] as? Int ?: 0,
+                categoryInformation = data["categoryInformation"] as? Int ?: 0,
+                otherInformation = data["otherInformation"] as? String,
+                lastUpdate = data["lastUpdate"] as? LocalDateTime ?: throw IllegalArgumentException("Missing lastUpdate")
+            )
+        }
     }
 }

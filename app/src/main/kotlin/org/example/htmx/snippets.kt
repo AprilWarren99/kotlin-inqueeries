@@ -1,15 +1,17 @@
 package org.example.htmx
 import kotlinx.html.*
 
-fun HTML.insertHead() {
+fun HTML.insertHead(imports: HEAD.() -> Unit = {}) {
     head {
         script {
             src = "https://unpkg.com/htmx.org@2.0.4"
         }
-        // script {
-        //     src = "https://unpkg.com/@tailwindcss/browser@4"
-        // }
-        link(rel = "stylesheet", href = "/static/css/styles.css", type = "text/css")
+        link(
+            rel = "stylesheet",
+            href = "/static/css/styles.css",
+            type = "text/css"
+        )
+        imports()  // call the lambda here
     }
 }
 

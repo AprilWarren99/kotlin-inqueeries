@@ -18,7 +18,6 @@ data class Categories (
     //health
     val isHealthCare: Boolean,
 
-    // val healthCareProvider:
     val healthCentre: Boolean,
     val counselor: Boolean,
     val familyDoctor: Boolean,

@@ -24,5 +24,16 @@ data class AccessibilityInformation(
             accessibleBathroom = resultRow[AccessibilityInformationTable.accessibleBathroom],
             lastUpdate = resultRow[AccessibilityInformationTable.lastUpdate],
         )
+        fun fromMap(data: Map<String, Any?>): AccessibilityInformation{
+            return AccessibilityInformation(
+                id = data["id"] as? Int ?: throw IllegalArgumentException("Missing id"),
+                automaticDoors = data["automaticDoors"] == "on",
+                entrance = data["entrance"] == "on",
+                parking = data["parking"] == "on",
+                genderNeutralBathroom = data["genderNeutralBathroom"] == "on",
+                accessibleBathroom = data["accessibleBathroom"] == "on",
+                lastUpdate = data["lastUpdate"] as? LocalDateTime ?: throw IllegalArgumentException("Missing lastUpdate")
+            )
+        }
     }
 }

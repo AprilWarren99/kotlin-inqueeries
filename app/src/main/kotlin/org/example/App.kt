@@ -3,6 +3,7 @@
  */
 package org.example
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
 import org.example.dbHandler.Handler
 
@@ -15,14 +16,19 @@ import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
+import io.ktor.server.request.receiveParameters
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.html.*
+import org.example.dataClasses.AccessibilityInformation
+import org.example.dataClasses.Categories
 
 
 import org.example.dataClasses.Contact
 import org.example.dataClasses.Organization
 import org.example.htmx.pages.allOrganizationsPage
 import org.example.htmx.pages.updateOrganizationPage
+import org.example.model.AccessibilityInformationTable
+import org.example.model.CategoriesTable
 
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -30,7 +36,9 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.leftJoin
 import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalKtorApi::class)
 fun main() {
@@ -98,17 +106,28 @@ fun main() {
                 }
                 call.respondHtml { allOrganizationsPage(organizations,
                     call.request.path()) }
+
+                return@get
             }
 
             get("/update/{orgID}") {
+
                 try {
                     val queryID = call.parameters["orgID"]?.toInt() ?: -1
                     val contactInfo: MutableList<Contact> = mutableListOf()
                     var organizationInfo: Organization? = null
+                    var accessibilityInfo: AccessibilityInformation? = null
+                    var categories: Categories? = null
+
+                    if (queryID == -1){
+                        call.respondText { "Invalid query ID" }
+                        return@get
+                    }
 
                     transaction {
                         organizationInfo = OrganizationTable
                             .selectAll()
+                            .where { OrganizationTable.id eq queryID }
                             .map { Organization.fromRow(it) }
                             .firstOrNull()
 
@@ -122,24 +141,112 @@ fun main() {
                                     println("Error in Contact.fromRow: ${e.message}")
                                 }
                             }
-                    }
 
-                    if (organizationInfo != null) {
+                        accessibilityInfo = AccessibilityInformationTable
+                            .leftJoin(OrganizationTable,
+                                { AccessibilityInformationTable.id },
+                                { OrganizationTable.accessibilityInformation })
+                            .selectAll()
+                            .where{ OrganizationTable.id eq queryID }
+                            .map{ AccessibilityInformation.fromRow(it) }
+                            .firstOrNull()
+
+                        categories = CategoriesTable
+                            .leftJoin(OrganizationTable,
+                                { CategoriesTable.id },
+                                { OrganizationTable.categoryInformation })
+                            .selectAll()
+                            .where{ OrganizationTable.id eq queryID }
+                            .map{ Categories.fromRow(it) }
+                            .firstOrNull()
+                    }
                         call.respondHtml {
                             updateOrganizationPage(
                                 organizationInfo as Organization,
-                                contactInfo,
-                                call.request.path()
+                                contacts = contactInfo,
+                                path = call.request.path(),
+                                accessInfo = accessibilityInfo as AccessibilityInformation,
+                                categoriesInfo = categories as Categories
                             )
                         }
-                    } else {
-                        call.respondText { "Couldn't get organization info" }
-                    }
                 } catch (e: Exception) {
                     println("Error: ${e.message}")
                     call.respondText { "An error occurred: ${e.message}" }
                 }
             }
+            hx.post("/update/{orgID}"){
+                val params = call.receiveParameters()
+                val id = call.parameters["orgID"]?.toInt() ?: -1
+                val accessibilityID = params["accessibilityID"]?.toInt() ?: -1
+                val categoriesID = params["categoriesID"]?.toInt() ?: -1
+                println("Parameters: ${params["accessibilityID"]?.toInt() ?: -1}")
+
+
+                if(id == -1){
+                    call.respondHtml(HttpStatusCode.BadRequest){
+                        body{
+                            p{ +"Error, invalid orgID provided" }
+                        }
+                    }
+                    return@post
+                }
+                if(accessibilityID == -1){
+                    println("invalid accessID: ${accessibilityID}\nraw: ${call.parameters["accessibilityID"]}")
+                    call.respondHtml(HttpStatusCode.BadRequest){
+                        body{
+                            p{ +"Error, invalid Accessibility Information ID received: ${accessibilityID}" }
+                        }
+                    }
+                    return@post
+                }
+
+                if(categoriesID == -1){
+                    call.respondHtml(HttpStatusCode.BadRequest){
+                        body{
+                            p{ +"Error, invalid Categories Information ID received " }
+                        }
+                    }
+                    return@post
+                }
+
+
+                val organization = Organization.fromMap(mapOf(
+                    "id" to id,
+                    "name" to params["name"],
+                    "description" to params["description"],
+                    "streetAddress" to params["streetAddress"],
+                    "city" to params["city"],
+                    "province" to params["province"],
+                    "phone" to params["phone"],
+                    "email" to params["email"],
+                    "website" to params["website"],
+                    "socialMedia" to params["socialMedia"],
+                    "queerOwned" to params["queerOwned"],
+                    "queerInclusive" to params["queerInclusive"],
+                    "otherNotes" to params["otherNotes"],
+                    "lastUpdate" to LocalDateTime.now()
+                ))
+                val accessibilityInformation = AccessibilityInformation.fromMap(mapOf(
+                        "id" to accessibilityID,
+                        "automaticDoors" to params["automaticDoors"],
+                        "entrance" to params["entrance"],
+                        "parking" to params["parking"],
+                        "genderNeutralBathroom" to params["genderNeutralBathroom"],
+                        "accessibleBathroom" to params["accessibleBathroom"],
+                        "lastUpdate" to LocalDateTime.now()
+                    ))
+                // val categoriesInformation = Categories.fromMap()
+                call.respondHtml(HttpStatusCode.OK){
+                    body{
+                        div { +organization.toString() }
+                        br()
+                        div { +accessibilityInformation.toString() }
+                    }
+                }
+
+                return@post
+            }
+
             hx.get("/update/get-new-contact-form"){
                 call.respondText { """
                         <fieldset class="update-form-contact">
@@ -162,6 +269,7 @@ fun main() {
                         <div id="contactFormContainer"></div>
                     """.trimIndent()
                 }
+                return@get
             }
         }
     }.start(wait = true)

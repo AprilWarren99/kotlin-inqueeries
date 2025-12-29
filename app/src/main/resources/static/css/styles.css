@@ -2,6 +2,8 @@
     line-height: 1.5
 }
 
+
+
 html{
     background-color: #0f0f0f;
 }
@@ -34,6 +36,119 @@ th, td{
     height: min-content;
     width: auto;
 }
+
+.categoriesSubgroup{
+    margin: 0.5em 2em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1em;
+}
+
+.categoriesSubgroup > .toggleWrapper{
+    margin-left: 5px;
+}
+
+.toggleWrapper{
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+/* Hide native checkbox */
+input.toggle {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+/* Label container */
+label.toggleLabel {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: .5em;
+  user-select: none;
+  font-size: 1em;
+}
+
+/* Switch outer */
+label.toggleLabel .switch {
+  position: relative;
+  width: 2em;   /* track width */
+  height: 1em;  /* track height */
+  flex-shrink: 0;
+}
+
+/* Track */
+label.toggleLabel .track {
+  position: absolute;
+  inset: 0;
+  background: hsl(0, 80%, 90%);
+  border-radius: 1em;
+  transition: background 200ms ease;
+}
+
+/* Knob */
+label.toggleLabel .knob {
+  position: absolute;
+  width: 1.4em;   /* knob diameter */
+  height: 1.4em;
+  top: 50%;
+  left: 0;        /* start at left */
+  transform: translate(0, -50%);
+  background: hsl(0, 80%, 60%);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: .7em;
+  color: white;
+  transition: left 200ms ease, background 200ms ease;
+}
+
+/* Unchecked symbol */
+label.toggleLabel .knob::before {
+  content: "✕";
+}
+
+/* Checked state */
+/* Track changes color */
+input.toggle:checked + label.toggleLabel .track {
+  background: hsl(100, 70%, 90%);
+}
+
+/* Move knob to right */
+input.toggle:checked + label.toggleLabel .knob {
+  left: calc(100% - 1.4em); /* (track width - knob width) */
+  background: hsl(100, 70%, 60%);
+}
+
+/* Checked symbol */
+input.toggle:checked + label.toggleLabel .knob::before {
+  content: "✔";
+}
+
+/* Focus outline */
+input.toggle:focus + label.toggleLabel .track {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+/* Disabled states */
+input.toggle:disabled + label.toggleLabel {
+  color: #777;
+  cursor: default;
+}
+
+input.toggle:disabled + label.toggleLabel .track {
+  background: #CCC;
+}
+
+input.toggle:disabled + label.toggleLabel .knob {
+  background: #777;
+}
+
 
 @media (min-width: 600px){
 

@@ -19,7 +19,7 @@ object CategoriesTable: Table("categories_information"){
     //health
     val isHealthCare = bool("is_health_care")
 
-    // val healthCareProvider = bool("health_care_provider").default(false)
+    // val healthCareProvider = bool("health_care_provider").default(false) -- findable based on below so redundant
     val healthCentre = bool("health_centre").default(false)
     val counselor = bool("counselor").default(false)
     val familyDoctor = bool("family_doctor").default(false)
