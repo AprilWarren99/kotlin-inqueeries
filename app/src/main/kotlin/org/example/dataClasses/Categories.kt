@@ -2,6 +2,7 @@ package org.example.dataClasses
 
 import org.example.model.CategoriesTable
 import org.jetbrains.exposed.v1.core.ResultRow
+import java.time.LocalDateTime
 
 data class Categories (
     val id: Int,
@@ -125,5 +126,65 @@ data class Categories (
             spiritual = resultRow[CategoriesTable.spiritual],
             transportation = resultRow[CategoriesTable.transportation],
         )
+        fun fromMap(data: Map<String, Any?>): Categories{
+            return Categories(
+                id = data["id"] as? Int ?: throw IllegalArgumentException("Missing id"),
+
+                isEducation = data["isEducation"] == "on",
+
+                individual = data["individual"] == "on",
+                organization = data["organization"] == "on",
+                postSecondary = data["postSecondary"] == "on",
+                remoteOnline = data["remoteOnline"] == "on",
+                workshopsOrTraining = data["workshopsOrTraining"] == "on",
+
+                //health
+                isHealthCare = data["isHealthCare"] == "on",
+
+                healthCentre = data["healthCentre"] == "on",
+                counselor = data["counselor"] == "on",
+                familyDoctor = data["familyDoctor"] == "on",
+                mental = data["mental"] == "on",
+                peerSupport = data["peerSupport"] == "on",
+                physical = data["physical"] == "on",
+                private = data["private"] == "on",
+                public = data["public"] == "on",
+                specialist = data["specialist"] == "on",
+                trans = data["trans"] == "on",
+
+                //hospitality
+                isHospitality = data["isHospitality"] == "on",
+                bar = data["bar"] == "on",
+                cafe = data["cafe"] == "on",
+                catering = data["catering"] == "on",
+                foodTruck = data["foodTruck"] == "on",
+                hotel = data["hotel"] == "on",
+                restaurant = data["restaurant"] == "on",
+
+                //retail
+                isRetail = data["isRetail"] == "on",
+                isAdult = data["isAdult"] == "on", // 19+
+                adultProducts = data["adultProducts"] == "on",
+                artist = data["artist"] == "on",
+                clothing = data["clothing"] == "on",
+                consultant = data["consultant"] == "on",
+                convenience = data["convenience"] == "on",
+                digitalServices = data["digitalServices"] == "on",
+                entertainment = data["entertainment"] == "on",
+                esthetics = data["esthetics"] == "on",
+                fitnessCentre = data["fitnessCentre"] == "on",
+                groceries = data["groceries"] == "on",
+                legal = data["legal"] == "on",
+                skilledTrades = data["skilledTrades"] == "on",
+
+                //other
+                isOther = data["isOther"] == "on",
+                employment = data["employment"] == "on",
+                foodSecurity = data["foodSecurity"] == "on",
+                housing = data["housing"] == "on",
+                spiritual = data["spiritual"] == "on",
+                transportation = data["transportation"] == "on",
+            )
+        }
     }
 }

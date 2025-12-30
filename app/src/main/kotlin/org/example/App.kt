@@ -37,13 +37,15 @@ import org.example.model.ContactTable
 import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
+import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.update
 import java.time.format.DateTimeFormatter
-import java.time.LocalDateTime
+import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalKtorApi::class)
 fun main() {
     // Init the database so the model objects can be used
-    Handler(false)
+    val dbHandler = Handler(false)
     val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
@@ -109,7 +111,6 @@ fun main() {
 
                 return@get
             }
-
             get("/update/{orgID}") {
 
                 try {
@@ -179,8 +180,6 @@ fun main() {
                 val id = call.parameters["orgID"]?.toInt() ?: -1
                 val accessibilityID = params["accessibilityID"]?.toInt() ?: -1
                 val categoriesID = params["categoriesID"]?.toInt() ?: -1
-                println("Parameters: ${params["accessibilityID"]?.toInt() ?: -1}")
-
 
                 if(id == -1){
                     call.respondHtml(HttpStatusCode.BadRequest){
@@ -199,7 +198,6 @@ fun main() {
                     }
                     return@post
                 }
-
                 if(categoriesID == -1){
                     call.respondHtml(HttpStatusCode.BadRequest){
                         body{
@@ -208,39 +206,190 @@ fun main() {
                     }
                     return@post
                 }
+                // generate a set of contact index numbers based on regex matching
+                val contactIndices: Set<Int> =
+                    params.names()
+                        .mapNotNull { name ->
+                            Regex("""contact(\d+)ID""").find(name)?.groupValues?.get(1)?.toInt()
+                        }
+                        .toSet()
 
+                val results = mutableListOf<FlowContent.() -> Unit>()
 
-                val organization = Organization.fromMap(mapOf(
-                    "id" to id,
-                    "name" to params["name"],
-                    "description" to params["description"],
-                    "streetAddress" to params["streetAddress"],
-                    "city" to params["city"],
-                    "province" to params["province"],
-                    "phone" to params["phone"],
-                    "email" to params["email"],
-                    "website" to params["website"],
-                    "socialMedia" to params["socialMedia"],
-                    "queerOwned" to params["queerOwned"],
-                    "queerInclusive" to params["queerInclusive"],
-                    "otherNotes" to params["otherNotes"],
-                    "lastUpdate" to LocalDateTime.now()
-                ))
-                val accessibilityInformation = AccessibilityInformation.fromMap(mapOf(
-                        "id" to accessibilityID,
+                if(dbHandler.updateOrganizationTable( id,
+                    params = mapOf(
+                        "name" to params["name"],
+                        "description" to params["description"],
+                        "email" to params["email"],
+                        "streetAddress" to params["streetAddress"],
+                        "city" to params["city"],
+                        "province" to params["province"],
+                        "phoneNumber" to (params["phoneNumber"] ?: ""),
+                        "socialMedia" to params["socialMedia"],
+                        "website" to params["website"],
+                        "queerOwned" to params["queerOwned"],
+                        "queerInclusive" to params["queerInclusive"],
+                        "otherInformation" to (params["otherInformation"] ?: ""),
+                    ),
+                    booleanMappings = mapOf(
+                        "queerOwned" to OrganizationTable.queerOwned,
+                        "queerInclusive" to OrganizationTable.queerInclusive
+                    ),
+                    stringMappings = mapOf(
+                        "name" to OrganizationTable.name,
+                        "description" to OrganizationTable.description,
+                        "email" to OrganizationTable.email,
+                        "streetAddress" to OrganizationTable.streetAddress,
+                        "city" to OrganizationTable.city,
+                        "province" to OrganizationTable.province,
+                        "phoneNumber" to OrganizationTable.phoneNumber,
+                        "socialMedia" to OrganizationTable.socialMedia,
+                        "website" to OrganizationTable.website,
+                        "otherInformation" to OrganizationTable.otherInformation
+                    )
+                )){results += { p { +"Organization Information Updated" } }}
+                if(dbHandler.updateAccessibilityTable(accessibilityID,
+                    params = mapOf(
                         "automaticDoors" to params["automaticDoors"],
-                        "entrance" to params["entrance"],
-                        "parking" to params["parking"],
-                        "genderNeutralBathroom" to params["genderNeutralBathroom"],
                         "accessibleBathroom" to params["accessibleBathroom"],
-                        "lastUpdate" to LocalDateTime.now()
-                    ))
-                // val categoriesInformation = Categories.fromMap()
+                        "genderNeutralBathroom" to params["genderNeutralBathroom"],
+                        "parking" to params["parking"],
+                        "entrance" to params["entrance"]
+                        ),
+                    booleanMappings = mapOf(
+                        "automaticDoors" to AccessibilityInformationTable.automaticDoors,
+                        "accessibleBathroom" to AccessibilityInformationTable.accessibleBathroom,
+                        "genderNeutralBathroom" to AccessibilityInformationTable.genderNeutralBathroom,
+                        "parking" to AccessibilityInformationTable.parking,
+                        "entrance" to AccessibilityInformationTable.entrance),
+                )){results += { p { +"Accessibility Information Updated" } }}
+                contactIndices.forEach {
+                    val email = params["contact${it}DirectEmail"]
+                    if(dbHandler.updateContactInfo(
+                        contactID = params["contact${it}ID"]!!.toInt(),
+                        params = mapOf(
+                            "name" to (params["contact${it}Name"] ?: "no name"),
+                            "pronouns" to params["contact${it}Pronouns"],
+                            "position" to params["contact${it}Position"],
+                            "directEmail" to params["contact${it}DirectEmail"],
+                            "directPhone" to params["contact${it}DirectPhone"],
+                        ),
+                        stringMappings = mapOf(
+                            "name" to ContactTable.name,
+                            "pronouns" to ContactTable.pronouns,
+                            "position" to ContactTable.position,
+                            "directEmail" to ContactTable.directEmail,
+                            "directPhone" to ContactTable.directPhone
+                        )
+                    )) {results += { p { +"Contact $it Information Updated" } }}
+
+                }
+                if(dbHandler.updateCategoriesTable(
+                        categoriesID = categoriesID,
+                        params = mapOf(
+                            "isEducation" to params["isEducation"],
+                            "individual" to params["individual"],
+                            "organization" to params["organization"],
+                            "postSecondary" to params["postSecondary"],
+                            "remoteOnline" to params["remoteOnline"],
+                            "workshopsOrTraining" to params["workshopsOrTraining"],
+
+                            "isHealthCare" to params["isHealthCare"],
+                            "healthCentre" to params["healthCentre"],
+                            "counselor" to params["counselor"],
+                            "familyDoctor" to params["familyDoctor"],
+                            "mental" to params["mental"],
+                            "peerSupport" to params["peerSupport"],
+                            "physical" to params["physical"],
+                            "private" to params["private"],
+                            "public" to params["public"],
+                            "specialist" to params["specialist"],
+                            "trans" to params["trans"],
+
+                            "isHospitality" to params["isHospitality"],
+                            "bar" to params["bar"],
+                            "cafe" to params["cafe"],
+                            "catering" to params["catering"],
+                            "foodTruck" to params["foodTruck"],
+                            "hotel" to params["hotel"],
+                            "restaurant" to params["restaurant"],
+                            "isRetail" to params["isRetail"],
+                            "isAdult" to params["isAdult"],
+                            "adultProducts" to params["adultProducts"],
+                            "artist" to params["artist"],
+                            "clothing" to params["clothing"],
+                            "consultant" to params["consultant"],
+                            "convenience" to params["convenience"],
+                            "digitalServices" to params["digitalServices"],
+                            "entertainment" to params["entertainment"],
+                            "esthetics" to params["esthetics"],
+                            "fitnessCentre" to params["fitnessCentre"],
+                            "groceries" to params["groceries"],
+                            "legal" to params["legal"],
+                            "skilledTrades" to params["skilledTrades"],
+                            "isOther" to params["isOther"],
+                            "employment" to params["employment"],
+                            "foodSecurity" to params["foodSecurity"],
+                            "housing" to params["housing"],
+                            "spiritual" to params["spiritual"],
+                            "transportation" to params["transportation"],
+                        ),
+                        booleanMappings = mapOf(
+                            "isEducation" to CategoriesTable.isEducation,
+                            "individual" to CategoriesTable.individual,
+                            "organization" to CategoriesTable.organization,
+                            "postSecondary" to CategoriesTable.postSecondary,
+                            "remoteOnline" to CategoriesTable.remoteOnline,
+                            "workshopsOrTraining" to CategoriesTable.workshopsOrTraining,
+
+                            "isHealthCare" to CategoriesTable.isHealthCare,
+                            "healthCentre" to CategoriesTable.healthCentre,
+                            "counselor" to CategoriesTable.counselor,
+                            "familyDoctor" to CategoriesTable.familyDoctor,
+                            "mental" to CategoriesTable.mental,
+                            "peerSupport" to CategoriesTable.peerSupport,
+                            "physical" to CategoriesTable.physical,
+                            "private" to CategoriesTable.private,
+                            "public" to CategoriesTable.public,
+                            "specialist" to CategoriesTable.specialist,
+                            "trans" to CategoriesTable.trans,
+                            "isHospitality" to CategoriesTable.isHospitality,
+                            "bar" to CategoriesTable.bar,
+                            "cafe" to CategoriesTable.cafe,
+                            "catering" to CategoriesTable.catering,
+                            "foodTruck" to CategoriesTable.foodTruck,
+                            "hotel" to CategoriesTable.hotel,
+                            "restaurant" to CategoriesTable.restaurant,
+                            "isRetail" to CategoriesTable.isRetail,
+                            "isAdult" to CategoriesTable.isAdult,
+                            "adultProducts" to CategoriesTable.adultProducts,
+                            "artist" to CategoriesTable.artist,
+                            "clothing" to CategoriesTable.clothing,
+                            "consultant" to CategoriesTable.consultant,
+                            "convenience" to CategoriesTable.convenience,
+                            "digitalServices" to CategoriesTable.digitalServices,
+                            "entertainment" to CategoriesTable.entertainment,
+                            "esthetics" to CategoriesTable.esthetics,
+                            "fitnessCentre" to CategoriesTable.fitnessCentre,
+                            "groceries" to CategoriesTable.groceries,
+                            "legal" to CategoriesTable.legal,
+                            "skilledTrades" to CategoriesTable.skilledTrades,
+                            "isOther" to CategoriesTable.isOther,
+                            "employment" to CategoriesTable.employment,
+                            "foodSecurity" to CategoriesTable.foodSecurity,
+                            "housing" to CategoriesTable.housing,
+                            "spiritual" to CategoriesTable.spiritual,
+                            "transportation" to CategoriesTable.transportation,
+                        )
+                    )){results += { p { +"Categories Information Updated" } }}
+                if(results.isEmpty()){results += { p { +"No changes were made" } }}
                 call.respondHtml(HttpStatusCode.OK){
                     body{
-                        div { +organization.toString() }
-                        br()
-                        div { +accessibilityInformation.toString() }
+                        p {
+                            results.forEach {
+                                it()
+                            }
+                        }
                     }
                 }
 

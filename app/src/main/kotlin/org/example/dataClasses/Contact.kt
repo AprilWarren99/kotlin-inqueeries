@@ -25,5 +25,18 @@ data class Contact(
             directPhone = resultRow[ContactTable.directPhone],
             lastUpdate = resultRow[ContactTable.lastUpdate]
         )
+        fun fromMap(data: Map<String, Any?>): Contact{
+            println(data["lastUpdate"])
+            return Contact(
+                id = data["id"] as? Int ?: throw IllegalArgumentException("Missing contact id"),
+                organizationID = data["organizationID"] as? Int ?: throw IllegalArgumentException("Missing contacts organization id"),
+                name = data["name"].toString(),
+                pronouns = data["pronouns"].toString(),
+                position = data["position"].toString(),
+                directEmail = data["directEmail"].toString(),
+                directPhone = data["directPhone"].toString(),
+                lastUpdate = data["lastUpdate"] as? LocalDateTime ?: throw IllegalArgumentException("Missing contacts lastUpdate")
+            )
+        }
     }
 }

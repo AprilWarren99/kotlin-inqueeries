@@ -42,7 +42,6 @@ data class Organization(
         )
 
         fun fromMap(data: Map<String, Any?>): Organization{
-
             return Organization(
                 id = data["id"] as? Int ?: throw IllegalArgumentException("Missing id"),
                 name = data["name"] as? String ?: throw IllegalArgumentException("Missing name"),

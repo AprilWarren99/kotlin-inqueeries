@@ -6,14 +6,21 @@ import org.example.model.AccessibilityInformationTable
 import org.example.model.CategoriesTable
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.select
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import java.io.File
+import java.time.LocalDateTime
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.forEach
 
 class Handler (reinitDB: Boolean = false){
 
@@ -215,6 +222,195 @@ class Handler (reinitDB: Boolean = false){
         } catch (e: Exception) {
             e.printStackTrace()
             println("Error in addFirebaseData: ${e.message}")
+        }
+    }
+    fun updateOrganizationTable(
+        organizationID: Int,
+        params: Map<String, String?>,
+        booleanMappings: Map<String, Column<*>>,
+        stringMappings: Map<String, Column<*>>,
+    ): Boolean {
+        return transaction {
+            val oldRow = OrganizationTable
+                .selectAll()
+                .where { OrganizationTable.id eq organizationID }
+                .singleOrNull()
+                ?: return@transaction false // row not found
+
+            var changed = false
+            val newValues = mutableMapOf<Column<*>, Any?>()
+
+            // Compare each column with the incoming "on"/"off" value
+            booleanMappings.forEach { (paramKey, column) ->
+                val newValue = params[paramKey] == "on"
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Compare each column with the incoming "on"/"off" value
+            stringMappings.forEach { (paramKey, column) ->
+                val newValue = params[paramKey]
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Update if anything changed
+            if (changed) {
+                OrganizationTable.update({ OrganizationTable.id eq organizationID }) { stmt ->
+                    newValues.forEach { (column, value) ->
+                        @Suppress("UNCHECKED_CAST")
+                        stmt[column as Column<Any?>] = value
+                    }
+                    stmt[OrganizationTable.lastUpdate] = LocalDateTime.now()
+                }
+            }
+            changed
+        }
+    }
+    fun updateAccessibilityTable(
+        accessibilityID: Int,
+        params: Map<String, String?>,
+        booleanMappings: Map<String, Column<*>>? = null,
+        stringMappings: Map<String, Column<*>>? = null,
+    ): Boolean {
+        return transaction {
+            val oldRow = AccessibilityInformationTable
+                .selectAll()
+                .where { AccessibilityInformationTable.id eq accessibilityID }
+                .singleOrNull()
+                ?: return@transaction false // row not found
+
+            var changed = false
+            val newValues = mutableMapOf<Column<*>, Any?>()
+
+            // Compare each column with the incoming "on"/"off" value
+            booleanMappings?.forEach { (paramKey, column) ->
+                val newValue = params[paramKey] == "on"
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Compare each column with the incoming "on"/"off" value
+            stringMappings?.forEach { (paramKey, column) ->
+                val newValue = params[paramKey]
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Update if anything changed
+            if (changed) {
+                AccessibilityInformationTable.update({ AccessibilityInformationTable.id eq accessibilityID }) { stmt ->
+                    newValues.forEach { (column, value) ->
+                        @Suppress("UNCHECKED_CAST")
+                        stmt[column as Column<Any?>] = value
+                    }
+                    stmt[AccessibilityInformationTable.lastUpdate] = LocalDateTime.now()
+                }
+            }
+
+            changed
+        }
+    }
+    fun updateContactInfo(
+        contactID: Int,
+        params: Map<String, String?>,
+        booleanMappings: Map<String, Column<*>>? = null,
+        stringMappings: Map<String, Column<*>>,
+    ): Boolean {
+        return transaction {
+            val oldRow = ContactTable
+                .selectAll()
+                .where { ContactTable.id eq contactID }
+                .singleOrNull()
+                ?: return@transaction false // row not found
+
+            var changed = false
+            val newValues = mutableMapOf<Column<*>, Any?>()
+
+            // Compare each column with the incoming "on"/"off" value
+            booleanMappings?.forEach { (paramKey, column) ->
+                val newValue = params[paramKey] == "on"
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Compare each column with the incoming "on"/"off" value
+            stringMappings.forEach { (paramKey, column) ->
+                val newValue = params[paramKey]
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Update if anything changed
+            if (changed) {
+                ContactTable.update({ ContactTable.id eq contactID }) { stmt ->
+                    newValues.forEach { (column, value) ->
+                        @Suppress("UNCHECKED_CAST")
+                        stmt[column as Column<Any?>] = value
+                    }
+                    stmt[ContactTable.lastUpdate] = LocalDateTime.now()
+                }
+            }
+            changed
+        }
+    }
+    fun updateCategoriesTable(
+        categoriesID: Int,
+        params: Map<String, String?>,
+        booleanMappings: Map<String, Column<*>>? = null,
+        stringMappings: Map<String, Column<*>>? = null,
+    ): Boolean {
+        return transaction {
+            val oldRow = CategoriesTable
+                .selectAll()
+                .where { CategoriesTable.id eq categoriesID }
+                .singleOrNull()
+                ?: return@transaction false // row not found
+
+            var changed = false
+            val newValues = mutableMapOf<Column<*>, Any?>()
+
+            // Compare each column with the incoming "on"/"off" value
+            booleanMappings?.forEach { (paramKey, column) ->
+                val newValue = params[paramKey] == "on"
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Compare each column with the incoming "on"/"off" value
+            stringMappings?.forEach { (paramKey, column) ->
+                val newValue = params[paramKey]
+                if (oldRow[column] != newValue) {
+                    newValues[column] = newValue
+                    changed = true
+                }
+            }
+
+            // Update if anything changed
+            if (changed) {
+                CategoriesTable.update({ CategoriesTable.id eq categoriesID }) { stmt ->
+                    newValues.forEach { (column, value) ->
+                        @Suppress("UNCHECKED_CAST")
+                        stmt[column as Column<Any?>] = value
+                    }
+                    stmt[CategoriesTable.lastUpdate] = LocalDateTime.now()
+                }
+            }
+            changed
         }
     }
 }

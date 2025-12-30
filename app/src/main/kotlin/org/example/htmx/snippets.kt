@@ -1,5 +1,11 @@
 package org.example.htmx
 import kotlinx.html.*
+import org.example.model.AccessibilityInformationTable
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import java.time.LocalDateTime
 
 fun HTML.insertHead(imports: HEAD.() -> Unit = {}) {
     head {
@@ -15,7 +21,7 @@ fun HTML.insertHead(imports: HEAD.() -> Unit = {}) {
     }
 }
 
- fun FlowContent.insertHeader(path: String, heading: String){
+fun FlowContent.insertHeader(path: String, heading: String){
      a(href="/"){
          img(src="/static/images/QRLogo2_nobg.svg"){
              style = "float: inline-start;"
@@ -27,3 +33,4 @@ fun HTML.insertHead(imports: HEAD.() -> Unit = {}) {
         +heading
     }
 }
+

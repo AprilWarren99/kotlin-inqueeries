@@ -35,12 +35,12 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
         hiddenInput {
             name = "accessibilityID"
             id = "accessibilityID"
-            value = "${accessInfo.id}"
+            value = accessInfo.id.toString()
         }
         hiddenInput {
             name = "categoriesID"
             id = "categoriesID"
-            value = "${categoriesInfo.id}"
+            value = categoriesInfo.id.toString()
         }
 
         div {
@@ -237,6 +237,17 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         style="display: flex; flex-direction: column;"
                         classes = setOf("update-form-contact")
                         legend { +"Contact $contactNumber" }
+
+                        hiddenInput {
+                            name = "contact${index}ID"
+                            id = "contact${index}ID"
+                            value = contact.id.toString()
+                        }
+                        hiddenInput {
+                            name = "contact${index}organizationID"
+                            id = "contact${index}organizationID"
+                            value = "${contact.organizationID}"
+                        }
                         label {
                             htmlFor = "contact${index}Name"
                             +"Name:"
@@ -279,9 +290,9 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         }
                         input {
                             type = InputType.text
-                            name = "contact${index}"
-                            id = "contact${index}"
-                            value = contact.directPhone ?: ""
+                            name = "contact${index}DirectEmail"
+                            id = "contact${index}DirectEmail"
+                            value = contact.directEmail ?: ""
                         }
                         br
 
@@ -293,9 +304,15 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                             type = InputType.text
                             name = "contact${index}directPhone"
                             id = "contact${index}directPhone"
-                            value = contact.directPhone ?: ""
+                            value = contact.directPhone.toString()
                         }
                         br
+
+                        hiddenInput{
+                            name = "contact${index}lastUpdate"
+                            id = "contact${index}lastUpdate"
+                            value = contact.lastUpdate.toString()
+                        }
 
                         p {
                             +"Last Updated: ${
@@ -442,6 +459,11 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         }
                     }
                 }
+                p { +"Last Updated: ${
+                    accessInfo.lastUpdate.format(
+                        DateTimeFormatter.ofPattern("MMMM, dd, YYYY - hh:mm a")
+                    )
+                }" }
             }
             fieldSet {
                 style = "width: 100%; max-width: 1200px; display: flex; flex-direction: column; justify-content: flex-start; gap: 1em;"
@@ -1275,7 +1297,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                             checked = categoriesInfo.groceries == true
                         }
                         label {
-                            htmlFor = ""
+                            htmlFor = "groceries"
                             classes = setOf("toggleLabel")
                             +"Groceries"
                             span {
@@ -1298,7 +1320,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                             checked = categoriesInfo.legal == true
                         }
                         label {
-                            htmlFor = ""
+                            htmlFor = "legal"
                             classes = setOf("toggleLabel")
                             +"Legal"
                             span {
@@ -1396,9 +1418,9 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                                 checked = categoriesInfo.foodSecurity == true
                             }
                             label {
-                                htmlFor = ""
+                                htmlFor = "foodSecurity"
                                 classes = setOf("toggleLabel")
-                                +"foodSecurity"
+                                +"Food Security"
                                 span {
                                     classes = setOf("switch")
                                     span {
