@@ -3,6 +3,7 @@
  */
 package org.example
 
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.install
 import org.example.dbHandler.Handler
@@ -16,9 +17,11 @@ import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
+import io.ktor.server.request.receive
 import io.ktor.server.request.receiveParameters
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.html.*
+import kotlinx.html.stream.createHTML
 import org.example.dataClasses.AccessibilityInformation
 import org.example.dataClasses.Categories
 
@@ -38,6 +41,7 @@ import org.example.model.OrganizationTable
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
+import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.update
 import java.time.format.DateTimeFormatter
@@ -99,6 +103,63 @@ fun main() {
 
                 return@get
             }
+
+            hx.post("/all/search"){
+                val query = call.receiveParameters()["search"] ?: ""
+
+                val html = createHTML().tbody {
+                    id = "results"
+                    transaction {
+                        OrganizationTable
+                            .selectAll()
+                            .where { OrganizationTable.name like "%$query%" }
+                            .forEach { row ->
+                                tr {
+                                    td { +row[OrganizationTable.id].toString() }
+                                    td {
+                                        a("/update/${OrganizationTable.id}") {
+                                            +row[OrganizationTable.name]
+                                        } }
+                                    td {
+                                        val descLength = row[OrganizationTable.description]!!.split(" ").size
+
+                                        if (descLength >= 10) {
+                                            +(row[OrganizationTable.description]?.split(" ")
+                                                ?.subList(0, minOf(10,descLength))
+                                                ?.joinToString(" ") + "...")
+                                        }else {
+                                            +(row[OrganizationTable.description] ?: " ")
+                                        }
+                                    }
+                                    td { +(row[OrganizationTable.email] ?: "null") }
+                                    td { +(row[OrganizationTable.streetAddress] ?: "null") }
+                                    td { +(row[OrganizationTable.city] ?: "null") }
+                                    td { +(row[OrganizationTable.province] ?: "null") }
+                                    td { +(row[OrganizationTable.phoneNumber].toString()) }
+                                    td { +(row[OrganizationTable.socialMedia].toString()) }
+                                    td {
+                                        a("${OrganizationTable.website}") {
+                                            +"Website"
+                                        }
+
+                                    }
+                                    td { +row[OrganizationTable.queerOwned].toString() }
+                                    td { +row[OrganizationTable.queerInclusive].toString() }
+                                    td { +(row[OrganizationTable.otherInformation] ?: "null") }
+                                    td {
+                                        +row[OrganizationTable.lastUpdate].format(
+                                            DateTimeFormatter.ofPattern("MMMM, dd, yyyy - hh:mm a")
+                                        )
+                                    }
+                                }
+                            }
+                    }
+                }
+
+                call.respondText(html, ContentType.Text.Html)
+            }
+
+
             get("/update/{orgID}") {
 
                 try {

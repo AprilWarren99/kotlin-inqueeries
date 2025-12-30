@@ -1,9 +1,14 @@
 package org.example.htmx.pages
 
+import io.ktor.htmx.HxSwap
+import io.ktor.htmx.html.hx
 import kotlinx.html.FlowContent
 import kotlinx.html.*
 import org.example.htmx.insertHead
 import org.example.htmx.insertHeader
+import org.example.model.OrganizationTable
+import java.time.format.DateTimeFormatter
+import kotlin.text.split
 
 
 fun HTML.allOrganizationsPage(orgs: List<Map<String, String?>>, path: String){
@@ -14,7 +19,29 @@ fun HTML.allOrganizationsPage(orgs: List<Map<String, String?>>, path: String){
     }
 }
 private fun FlowContent.insertBody(orgs: List<Map<String, String?>>){
+    form {
+        method = FormMethod.post
+        action = "/all/search"
+
+        label {
+            htmlFor = "Search"
+            +"Search"
+        }
+        input {
+            attributes.hx {
+                post = "/all/search"
+                target = "#results"
+                swap = HxSwap.outerHtml
+                trigger = "keyup changed delay:500ms"
+            }
+            type = InputType.text
+            name = "search"
+            id = "search"
+            placeholder = "Search..."
+        }
+    }
     table {
+        id="resultsTable"
         thead {
             tr {
                 th {
@@ -73,52 +100,68 @@ private fun FlowContent.insertBody(orgs: List<Map<String, String?>>){
                 }
             }
         }
-        orgs.forEach { org ->
-            tr {
-                td{
-                    +"${org["id"]}"
-                }
-                td {
-                    a("/update/${org["id"]}") {
-                        +"${org["name"]}"
+        tbody {
+            id="results"
+            orgs.forEach { org ->
+                tr {
+                    td {
+                        +"${org["id"]}"
                     }
-                }
-                td{
-                    +"${org["description"]}"
-                }
-                td{
-                    +"${org["email"]}"}
-                td{
-                    +"${org["streetAddress"]}"
-                }
-                td{
-                    +"${org["city"]}"
-                }
-                td{
-                    +"${org["province"]}"
-                }
-                td{
-                    +"${org["phoneNumber"]}"
-                }
-                td{
-                    +"${org["socialMedia"]}"
-                }
-                td{
-                    a("${org["socialMedia"]}"){
-                        +"website"
+                    td {
+                        a("/update/${org["id"]}") {
+                            +"${org["name"]}"
+                        }
                     }
-                }
-                td{
-                    +"${org["queerOwned"]}"
-                }
-                td{
-                    +"${org["queerInclusive"]}"
-                }
-                td{
-                    +"${org["other"]}"
-                }
-                td{
-                    +"${org["lastUpdate"]}"
+                    td {
+                        val descLength = org["description"]!!.split(" ").size
+
+                        if(descLength >= 10){
+                            +(org["description"]?.split(" ")
+                                ?.subList(0, minOf(10,
+                                    descLength))
+                                ?.joinToString(" ") + "...")
+                        }else{
+                            +(org["description"] ?: " ")
+                        }
+
+                    }
+                    td {
+                        +"${org["email"]}"
+                    }
+                    td {
+                        +"${org["streetAddress"]}"
+                    }
+                    td {
+                        +"${org["city"]}"
+                    }
+                    td {
+                        +"${org["province"]}"
+                    }
+                    td {
+                        +"${org["phoneNumber"]}"
+                    }
+                    td {
+                        +"${org["socialMedia"]}"
+                    }
+                    td {
+                        a("${org["website"]}") {
+                            +"website"
+                        }
+                    }
+                    td {
+                        +"${org["queerOwned"]}"
+                    }
+                    td {
+                        +"${org["queerInclusive"]}"
+                    }
+                    td {
+                        +"${org["other"]}"
+                    }
+                    td {
+                        +"""${org["lastUpdate"]?.format(
+                            DateTimeFormatter.ofPattern("MMMM, dd, YYYY - hh:mm a")
+                            )}"""
+                    }
                 }
             }
         }
