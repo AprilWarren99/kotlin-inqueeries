@@ -35,6 +35,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 import org.example.model.ContactTable
 import org.example.model.OrganizationTable
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.jdbc.select
@@ -45,7 +46,7 @@ import kotlin.reflect.typeOf
 @OptIn(ExperimentalKtorApi::class)
 fun main() {
     // Init the database so the model objects can be used
-    val dbHandler = Handler(false)
+    val dbHandler = Handler(true)
     val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
@@ -67,20 +68,7 @@ fun main() {
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
                 transaction {
-                    ContactTable.selectAll().forEach {
-                        contacts.add(
-                            mapOf(
-                                "id" to it[ContactTable.id].toString(),
-                                "organizationID" to it[ContactTable.organizationID].toString(),
-                                "name" to it[ContactTable.name],
-                                "pronouns" to it[ContactTable.pronouns],
-                                "position" to it[ContactTable.position],
-                                "directEmail" to it[ContactTable.directEmail],
-                                "directPhone" to it[ContactTable.directPhone]
-                            )
-                        )
-                    }
-                    OrganizationTable.selectAll().forEach {
+                    OrganizationTable.selectAll().orderBy(OrganizationTable.id to SortOrder.ASC).forEach {
                         val lastUpdate = it[OrganizationTable.lastUpdate]
                         val formattedLastUpdate = lastUpdate.format(formatter) ?: "N/A"  // Format the lastUpdate or default to "N/A"
 
@@ -224,7 +212,7 @@ fun main() {
                         "streetAddress" to params["streetAddress"],
                         "city" to params["city"],
                         "province" to params["province"],
-                        "phoneNumber" to (params["phoneNumber"] ?: ""),
+                        "phoneNumber" to (params["phone"] ?: ""),
                         "socialMedia" to params["socialMedia"],
                         "website" to params["website"],
                         "queerOwned" to params["queerOwned"],
@@ -264,7 +252,6 @@ fun main() {
                         "entrance" to AccessibilityInformationTable.entrance),
                 )){results += { p { +"Accessibility Information Updated" } }}
                 contactIndices.forEach {
-                    val email = params["contact${it}DirectEmail"]
                     if(dbHandler.updateContactInfo(
                         contactID = params["contact${it}ID"]!!.toInt(),
                         params = mapOf(

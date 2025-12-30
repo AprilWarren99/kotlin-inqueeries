@@ -249,9 +249,14 @@ class Handler (reinitDB: Boolean = false){
                 }
             }
 
-            // Compare each column with the incoming "on"/"off" value
             stringMappings.forEach { (paramKey, column) ->
+                if (!params.containsKey(paramKey)) return@forEach
+
                 val newValue = params[paramKey]
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+
+
                 if (oldRow[column] != newValue) {
                     newValues[column] = newValue
                     changed = true
@@ -346,7 +351,12 @@ class Handler (reinitDB: Boolean = false){
 
             // Compare each column with the incoming "on"/"off" value
             stringMappings.forEach { (paramKey, column) ->
+                if (!params.containsKey(paramKey)) return@forEach
+
                 val newValue = params[paramKey]
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() }
+
                 if (oldRow[column] != newValue) {
                     newValues[column] = newValue
                     changed = true

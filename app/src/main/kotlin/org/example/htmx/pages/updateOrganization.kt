@@ -109,8 +109,6 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                     value = org.province ?: ""
                 }
                 br
-
-
                 label {
                     htmlFor = "phone"
                     +"Phone:"
@@ -119,7 +117,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                     type = InputType.text
                     name = "phone"
                     id = "phone"
-                    value = org.phoneNumber.toString()
+                    value = org.phoneNumber ?: ""
                 }
                 br
 
@@ -211,15 +209,15 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                 }
 
                 label {
-                    htmlFor = "otherNotes"
+                    htmlFor = "otherInformation"
                     +"Other Notes"
                 }
                 textArea {
-                    name = "otherNotes"
-                    id = "otherNotes"
+                    name = "otherInformation"
+                    id = "otherInformation"
                     rows = "5"
                     cols = "30"
-                    +"${org.otherInformation}"
+                    +(org.otherInformation ?: "")
                 }
                 p {
                     +"Last Updated: ${
@@ -246,7 +244,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         hiddenInput {
                             name = "contact${index}organizationID"
                             id = "contact${index}organizationID"
-                            value = "${contact.organizationID}"
+                            value = contact.organizationID.toString()
                         }
                         label {
                             htmlFor = "contact${index}Name"
@@ -297,14 +295,14 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         br
 
                         label {
-                            htmlFor = "contact${index}directPhone"
+                            htmlFor = "contact${index}DirectPhone"
                             +"Phone Number:"
                         }
                         input {
                             type = InputType.text
-                            name = "contact${index}directPhone"
-                            id = "contact${index}directPhone"
-                            value = contact.directPhone.toString()
+                            name = "contact${index}DirectPhone"
+                            id = "contact${index}DirectPhone"
+                            value = contact.directPhone ?: ""
                         }
                         br
 
@@ -419,7 +417,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         classes = setOf("toggle")
                         name = "accessibleBathroom"
                         id = "accessibleBathroom"
-                        checked = accessInfo.parking == true
+                        checked = accessInfo.accessibleBathroom == true
                     }
                     label {
                         htmlFor = "accessibleBathroom"
@@ -597,7 +595,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         label {
                             htmlFor = "workshopsOrTraining"
                             classes = setOf("toggleLabel")
-                            +"Workshop Or Trainnig"
+                            +"Workshop Or Training"
                             span {
                                 classes = setOf("switch")
                                 span {
@@ -1460,8 +1458,8 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                         classes = setOf("toggleWrapper")
                         checkBoxInput {
                             classes = setOf("toggle")
-                            name = "spirituality"
-                            id = "spirituality"
+                            name = "spiritual"
+                            id = "spiritual"
                             checked = categoriesInfo.spiritual == true
                         }
                         label {
