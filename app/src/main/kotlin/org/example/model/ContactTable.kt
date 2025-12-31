@@ -9,7 +9,7 @@ object ContactTable: Table("contact"){
     val organizationID = integer("organizationID").references(OrganizationTable.id)
     val name = varchar("name", 120)
     val pronouns = varchar("pronouns", 30).nullable()
-    val position = varchar("position", 120)
+    val position = varchar("position", 120).nullable()
     val directEmail = varchar("directEmail", 128).nullable()
     val directPhone = varchar("directPhone", 10).nullable()
     val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)

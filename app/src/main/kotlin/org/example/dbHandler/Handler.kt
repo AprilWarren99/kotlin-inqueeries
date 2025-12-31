@@ -152,20 +152,33 @@ class Handler (reinitDB: Boolean = false){
 
                                     var orgID = -1
                                     if(orgQuery == null) {
+                                        var extraNotes: String? = null
+                                        if(org.extra_other_notes != ""){extraNotes = org.extra_other_notes}
+                                        var streetAddr: String? = null
+                                        if(org.org_street_addr != ""){streetAddr = org.org_street_addr}
+                                        var orgCity: String? = null
+                                        if(org.org_city != ""){orgCity = org.org_city}
+                                        var orgPhone: String? = null
+                                        if(org.org_phone != ""){orgPhone = org.org_phone}
+                                        var orgSocials: String? = null
+                                        if(org.org_socials != ""){orgSocials = org.org_socials}
+                                        var orgWebsite: String? = null
+                                        if(org.org_website != ""){orgWebsite = org.org_website}
+
                                         orgID = OrganizationTable.insert {
                                             it[name] = org.org_name
-                                            it[streetAddress] = org.org_street_addr
+                                            it[streetAddress] = streetAddr
                                             it[description] = org.org_desc
-                                            it[city] = org.org_city
+                                            it[city] = orgCity
                                             it[province] = org.org_province
-                                            it[phoneNumber] = org.org_phone
-                                            it[socialMedia] = org.org_socials
-                                            it[website] = org.org_website
+                                            it[phoneNumber] = orgPhone
+                                            it[socialMedia] = orgSocials
+                                            it[website] = orgWebsite
                                             it[queerOwned] = org.queer_owned
                                             it[queerInclusive] = org.queer_inclusive
                                             it[accessibilityInformation] = accessibilityID
                                             it[categoryInformation] = categoriesID
-                                            it[otherInformation] = org.extra_other_notes
+                                            it[otherInformation] = extraNotes
                                         } get OrganizationTable.id
                                     }else{
                                         orgID = orgQuery.get(OrganizationTable.id)
@@ -190,22 +203,28 @@ class Handler (reinitDB: Boolean = false){
                                         .firstOrNull()
 
                                     if(contact1Record == null && org.org_contact1_name != ""){
+                                        var pos: String? = null
+                                        if(org.org_contact1_position!="") { pos = org.org_contact1_position}
+
                                         ContactTable.insert{
                                             it[name] = org.org_contact1_name
                                             it[organizationID] = orgID
                                             it[pronouns] = org.org_contact1_pronouns
-                                            it[position] = org.org_contact1_position
+                                            it[position] = pos
                                             it[directEmail] = null
                                             it[directPhone] = null
                                         } get ContactTable.id
                                     }
 
                                     if (contact2Record == null && org.org_contact2_name != ""){
+                                        var pos: String? = null
+                                        if(org.org_contact2_position!="") { pos = org.org_contact2_position}
+
                                         ContactTable.insert{
                                             it[organizationID] = orgID
                                             it[name] = org.org_contact2_name
                                             it[pronouns] = org.org_contact2_pronouns
-                                            it[position] = org.org_contact2_position
+                                            it[position] = pos
                                             it[directEmail] = null
                                             it[directPhone] = null
                                         } get ContactTable.id

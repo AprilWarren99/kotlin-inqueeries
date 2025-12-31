@@ -9,7 +9,7 @@ data class Contact(
     val organizationID: Int,
     val name: String,
     val pronouns: String?,
-    val position: String,
+    val position: String?,
     val directEmail: String?,
     val directPhone: String?,
     val lastUpdate: LocalDateTime,

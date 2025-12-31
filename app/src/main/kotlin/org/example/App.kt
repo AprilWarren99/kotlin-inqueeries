@@ -117,7 +117,7 @@ fun main() {
                                 tr {
                                     td { +row[OrganizationTable.id].toString() }
                                     td {
-                                        a("/update/${OrganizationTable.id}") {
+                                        a("/update/${row[OrganizationTable.id]}") {
                                             +row[OrganizationTable.name]
                                         } }
                                     td {

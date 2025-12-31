@@ -278,7 +278,7 @@ private fun FlowContent.insertOrgForm(org: Organization, contacts: List<Contact>
                             type = InputType.text
                             name = "contact${index}Position"
                             id = "contact${index}Position"
-                            value = contact.position
+                            value = contact.position ?: ""
                         }
                         br
 
