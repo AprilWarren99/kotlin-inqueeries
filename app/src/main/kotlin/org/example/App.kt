@@ -17,7 +17,6 @@ import io.ktor.server.htmx.hx
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.path
-import io.ktor.server.request.receive
 import io.ktor.server.request.receiveParameters
 import io.ktor.utils.io.ExperimentalKtorApi
 import kotlinx.html.*
@@ -42,16 +41,13 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.core.like
-import org.jetbrains.exposed.v1.jdbc.select
-import org.jetbrains.exposed.v1.jdbc.update
 import java.time.format.DateTimeFormatter
-import kotlin.reflect.typeOf
 
 @OptIn(ExperimentalKtorApi::class)
 fun main() {
     // Init the database so the model objects can be used
     val dbHandler = Handler(true)
-    val baseurl = "http://localhost:8081"
+    // val baseurl = "http://localhost:8081"
 
     embeddedServer(Netty, 8081) {
 
@@ -67,7 +63,6 @@ fun main() {
             staticResources("/static", "static")
 
             get("/all") {
-                val contacts = mutableListOf<Map<String, String?>>()
                 val organizations = mutableListOf<Map<String, String?>>()
                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
@@ -242,7 +237,7 @@ fun main() {
                     println("invalid accessID: ${accessibilityID}\nraw: ${call.parameters["accessibilityID"]}")
                     call.respondHtml(HttpStatusCode.BadRequest){
                         body{
-                            p{ +"Error, invalid Accessibility Information ID received: ${accessibilityID}" }
+                            p{ +"Error, invalid Accessibility Information ID received: $accessibilityID" }
                         }
                     }
                     return@post
