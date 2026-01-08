@@ -20,4 +20,6 @@ object OrganizationTable : Table("organizations") {
     val categoryInformation = integer("categoryInformationID").references(CategoriesTable.id)
     val otherInformation = varchar("other", 512).nullable()
     val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
 }

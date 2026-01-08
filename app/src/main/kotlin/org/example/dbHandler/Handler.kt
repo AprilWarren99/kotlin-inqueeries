@@ -2,6 +2,8 @@ package org.example.dbHandler
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import io.ktor.server.html.insert
+import io.ktor.util.debug.useContextElementInDebugMode
 import org.example.model.AccessibilityInformationTable
 import org.example.model.CategoriesTable
 import org.example.model.ContactTable
@@ -440,6 +442,131 @@ class Handler (reinitDB: Boolean = false){
                 }
             }
             changed
+        }
+    }
+
+    fun insertCategories(
+        params: Map<String, String?>
+    ): Int{
+        val categoriesID = CategoriesTable.insert {
+            it[isEducation] = params["isEducation"] == "on"
+            it[individual] = params["individual"] == "on"
+            it[organization] = params["organization"] == "on"
+            it[postSecondary] = params["postSecondary"] == "on"
+            it[remoteOnline] = params["remoteOnline"] == "on"
+            it[workshopsOrTraining] = params["workshopsOrTraining"] == "on"
+
+            it[isHealthCare] = params["isHealthCare"] == "on"
+            it[healthCentre] = params["healthCentre"] == "on"
+            it[counselor] = params["counselor"] == "on"
+            it[familyDoctor] = params["familyDoctor"] == "on"
+            it[mental] = params["mental"] == "on"
+            it[peerSupport] = params["peerSupport"] == "on"
+            it[physical] = params["physical"] == "on"
+            it[private] = params["private"] == "on"
+            it[public] = params["public"] == "on"
+            it[specialist] = params["specialist"] == "on"
+            it[trans] = params["trans"] == "on"
+
+            it[isHospitality] = params["isHospitality"] == "on"
+            it[bar] = params["bar"] == "on"
+            it[cafe] = params["cafe"] == "on"
+            it[catering] = params["catering"] == "on"
+            it[foodTruck] = params["foodTruck"] == "on"
+            it[hotel] = params["hotel"] == "on"
+            it[restaurant] = params["restaurant"] == "on"
+
+            it[isRetail] = params["isRetail"] == "on"
+            it[isAdult] = params["isAdult"] == "on"
+            it[adultProducts] = params["adultProducts"] == "on"
+            it[artist] = params["artist"] == "on"
+            it[clothing] = params["clothing"] == "on"
+            it[consultant] = params["consultant"] == "on"
+            it[convenience] = params["convenience"] == "on"
+            it[digitalServices] = params["digitalServices"] == "on"
+            it[entertainment] = params["entertainment"] == "on"
+            it[esthetics] = params["esthetics"] == "on"
+            it[fitnessCentre] = params["fitnessCentre"] == "on"
+            it[groceries] = params["groceries"] == "on"
+            it[legal] = params["legal"] == "on"
+            it[skilledTrades] = params["skilledTrades"] == "on"
+
+            it[isOther] = params["isOther"] == "on"
+            it[employment] = params["employment"] == "on"
+            it[foodSecurity] = params["foodSecurity"] == "on"
+            it[housing] = params["housing"] == "on"
+            it[spiritual] = params["spiritual"] == "on"
+            it[transportation] = params["transportation"] == "on"
+        } get CategoriesTable.id
+
+        return categoriesID
+    }
+    fun insertAccessibilityInformation(
+        params: Map<String, String?>
+    ): Int{
+        try{
+            val accessibilityID = AccessibilityInformationTable.insert {
+                it[automaticDoors] = params["automaticDoors"] == "on"
+                it[entrance] = params["entrance"] == "on"
+                it[genderNeutralBathroom] = params["genderNeutralBathroom"] == "on"
+                it[parking] = params["parking"] == "on"
+                it[accessibleBathroom] = params["accessibleBathroom"] == "on"
+                it[lastUpdate] = LocalDateTime.now()
+            } get AccessibilityInformationTable.id
+
+            return accessibilityID
+        } catch (e: Error){
+            println("Error inserting into accessibility table: $e")
+            return -1
+        }
+    }
+    fun insertOrganization(
+        categoriesID: Int,
+        accessibilityID: Int,
+        params: Map<String, String?>
+    ): Int{
+        try{
+            val orgID = OrganizationTable.insert {
+                it[name] = params["name"]!!
+                it[description] = params["description"]
+                it[email] = params["email"]
+                it[streetAddress] = params["streetAddress"]
+                it[city] = params["city"]
+                it[province] = params["province"]
+                it[phoneNumber] = params["phoneNumber"]
+                it[socialMedia] = params["socialMedia"]
+                it[website] = params["website"]
+                it[queerOwned] = params["queerOwned"] == "on"
+                it[queerInclusive] = params["queerInclusive"] == "on"
+                it[accessibilityInformation] = accessibilityID
+                it[categoryInformation] = categoriesID
+                it[otherInformation] = params["otherInformation"]
+            } get OrganizationTable.id
+
+            return orgID
+        }catch (e: Error) {
+            println("Error inserting into OrganizationTable: $e")
+            return -1
+        }
+    }
+    fun insertContact(
+        orgID: Int,
+        params: Map<String, String?>
+    ): Int{
+        try{
+            val contactID = ContactTable.insert {
+                it[organizationID] = orgID
+                it[name] = params["name"]!!
+                it[pronouns] = params["pronouns"]
+                it[position] = params["position"]
+                it[directEmail] = params["directEmail"]
+                it[directPhone] = params["directPhone"]
+                it[lastUpdate] = LocalDateTime.now()
+            } get ContactTable.id
+            return contactID
+        }catch (e: Error){
+            println("Error inserting contact: $e")
+            return -1
         }
     }
 }

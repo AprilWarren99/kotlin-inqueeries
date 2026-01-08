@@ -66,4 +66,6 @@ object CategoriesTable: Table("categories_information"){
     val transportation = bool("transportation").default(false)
 
     val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
 }

@@ -27,6 +27,7 @@ import org.example.dataClasses.Categories
 
 import org.example.dataClasses.Contact
 import org.example.dataClasses.Organization
+import org.example.htmx.pages.addOrganizationPage
 import org.example.htmx.pages.allOrganizationsPage
 import org.example.htmx.pages.updateOrganizationPage
 import org.example.model.AccessibilityInformationTable
@@ -41,6 +42,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.leftJoin
 import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.transactions.transactionScope
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalKtorApi::class)
@@ -98,7 +100,6 @@ fun main() {
 
                 return@get
             }
-
             hx.post("/all/search"){
                 val query = call.receiveParameters()["search"] ?: ""
 
@@ -153,8 +154,6 @@ fun main() {
 
                 call.respondText(html, ContentType.Text.Html)
             }
-
-
             get("/update/{orgID}") {
 
                 try {
@@ -438,7 +437,6 @@ fun main() {
 
                 return@post
             }
-
             hx.get("/update/get-new-contact-form"){
                 call.respondText { """
                         <fieldset class="update-form-contact">
@@ -462,6 +460,244 @@ fun main() {
                     """.trimIndent()
                 }
                 return@get
+            }
+            get("/add/new-organization"){
+                call.respondHtml { addOrganizationPage(call.request.path()) }
+            }
+            hx.post("/add/new-organization") {
+                val params = call.receiveParameters()
+                println(params)
+                val orgMap: Map<String, String?> = mapOf(
+                    "name" to params["name"],
+                    "description" to params["description"],
+                    "email" to params["email"]?.takeIf { it.isNotBlank() },
+                    "streetAddress" to params["streetAddress"]?.takeIf { it.isNotBlank() },
+                    "city" to params["city"]?.takeIf { it.isNotBlank() },
+                    "province" to params["province"]?.takeIf { it.isNotBlank() },
+                    "phoneNumber" to params["phone"]?.takeIf { it.isNotBlank() },
+                    "socialMedia" to params["socialMedia"]?.takeIf { it.isNotBlank() },
+                    "website" to params["website"]?.takeIf { it.isNotBlank() },
+                    "queerOwned" to (params["queerOwned"] ?: "off"),
+                    "queerInclusive" to (params["queerInclusive"] ?: "off"),
+                    "otherInformation" to params["otherInformation"]?.takeIf { it.isNotBlank() }
+
+                )
+                val categoriesMap: Map<String, String> = mapOf(
+                    "isEducation" to (params["isEducation"] ?: "off"),
+                    "individual" to (params["individual"] ?: "off"),
+                    "organization" to (params["organization"] ?: "off"),
+                    "postSecondary" to (params["postSecondary"] ?: "off"),
+                    "remoteOnline" to (params["remoteOnline"] ?: "off"),
+                    "workshopsOrTraining" to (params["workshopsOrTraining"] ?: "off"),
+
+                    "isHealthCare" to (params["isHealthCare"] ?: "off"),
+                    "healthCentre" to (params["healthCentre"] ?: "off"),
+                    "counselor" to (params["counselor"] ?: "off"),
+                    "familyDoctor" to (params["familyDoctor"] ?: "off"),
+                    "mental" to (params["mental"] ?: "off"),
+                    "peerSupport" to (params["peerSupport"] ?: "off"),
+                    "physical" to (params["physical"] ?: "off"),
+                    "private" to (params["private"] ?: "off"),
+                    "public" to (params["public"] ?: "off"),
+                    "specialist" to (params["specialist"] ?: "off"),
+                    "trans" to (params["trans"] ?: "off"),
+
+                    "isHospitality" to (params["isHospitality"] ?: "off"),
+                    "bar" to (params["bar"] ?: "off"),
+                    "cafe" to (params["cafe"] ?: "off"),
+                    "catering" to (params["catering"] ?: "off"),
+                    "foodTruck" to (params["foodTruck"] ?: "off"),
+                    "hotel" to (params["hotel"] ?: "off"),
+                    "restaurant" to (params["restaurant"] ?: "off"),
+
+                    "isRetail" to (params["isRetail"] ?: "off"),
+                    "isAdult" to (params["isAdult"] ?: "off"),
+                    "adultProducts" to (params["adultProducts"] ?: "off"),
+                    "artist" to (params["artist"] ?: "off"),
+                    "clothing" to (params["clothing"] ?: "off"),
+                    "consultant" to (params["consultant"] ?: "off"),
+                    "convenience" to (params["convenience"] ?: "off"),
+                    "digitalServices" to (params["digitalServices"] ?: "off"),
+                    "entertainment" to (params["entertainment"] ?: "off"),
+                    "esthetics" to (params["esthetics"] ?: "off"),
+                    "fitnessCentre" to (params["fitnessCentre"] ?: "off"),
+                    "groceries" to (params["groceries"] ?: "off"),
+                    "legal" to (params["legal"] ?: "off"),
+                    "skilledTrades" to (params["skilledTrades"] ?: "off"),
+
+                    "isOther" to (params["isOther"] ?: "off"),
+                    "employment" to (params["employment"] ?: "off"),
+                    "foodSecurity" to (params["foodSecurity"] ?: "off"),
+                    "housing" to (params["housing"] ?: "off"),
+                    "spiritual" to (params["spiritual"] ?: "off"),
+                    "transport" to (params["transport"] ?: "off"),
+                )
+                val accessibilityMap: Map<String, String> = mapOf(
+                    "automaticDoors" to (params["automaticDoors"] ?: "off"),
+                    "entrance" to (params["entrance"] ?: "off"),
+                    "entrance" to (params["entrance"] ?: "off"),
+                    "genderNeutralBathroom" to (params["genderNeutralBathroom"] ?: "off"),
+                    "parking" to (params["parking"] ?: "off"),
+                    "accessibleBathroom" to (params["accessibleBathroom"] ?: "off"),
+                )
+
+                var insertSuccess = false
+                var errorString = ""
+                transaction {
+                    try {
+                        val accessibilityID = dbHandler.insertAccessibilityInformation(accessibilityMap)
+                        val categoriesTable = dbHandler.insertCategories(categoriesMap)
+
+                        if (accessibilityID == -1 || categoriesTable == -1) {
+                            this.rollback()
+                            return@transaction
+                        }
+                        val orgID = dbHandler.insertOrganization(
+                            categoriesTable,
+                            accessibilityID,
+                            orgMap
+                        )
+
+                        if (orgID != -1) {
+                            insertSuccess = true;
+                        }
+                    } catch (e: Error) {
+                        errorString = "Error adding data $e"
+                    }
+                }
+                if (insertSuccess) {
+                    call.respondHtml(HttpStatusCode.OK) {
+                        body {
+                            h2 {
+                                style="align-self: center;"
+                                +"Submission Successful"
+                            }
+                            div {
+                                classes = setOf("success-message")
+                                style = "border: 2px solid white; padding: 2em;"
+
+                                p { +"Thank you, ${orgMap["name"]}, for your submission!" }
+                                h3 { +"Organization Information"}
+                                ul {
+                                    li { +"Description: ${orgMap["description"] ?: " Not provided"}"}
+                                    li { +"Email: ${orgMap["email"] ?: "Not provided"}" }
+                                    li { +"Street Address: ${orgMap["streetAddress"] ?: "Not provided"}" }
+                                    li { +"City: ${orgMap["city"] ?: "Not provided"}" }
+                                    li { +"Province: ${orgMap["province"] ?: "Not provided"}" }
+                                    li { +"Phone Number: ${orgMap["phoneNumber"] ?: "Not provided"}" }
+                                    li { +"Social Media: ${orgMap["socialMedia"] ?: "Not provided"}" }
+                                    li { +"Website: ${orgMap["website"] ?: "Not provided"}" }
+                                    li { +"Queer Owned: ${if (orgMap["queerOwned"]=="on") "yes" else "no"}" }
+                                    li { +"Queer Inclusive: ${if(orgMap["queerInclusive"] == "on") "yes" else "no" }" }
+                                    li { +"Other Information: ${orgMap["otherInformation"] ?: "Not provided"}" }
+                                }
+
+                                h3 { +"Contact Information" }
+                                p { +"This isnt added yet" }
+
+                                h3 { +"Accessibility Information" }
+                                ul {
+                                    li { +"Automatic Doors: ${if (accessibilityMap["automaticDoors"]=="on") "yes" else "no"}" }
+                                    li { +"Entrance: ${if (accessibilityMap["entrance"]=="on") "yes" else "no"}" }
+                                    li { +"Parking: ${if (accessibilityMap["parking"]=="on") "yes" else "no"}" }
+                                    li { +"Gender Neutral Bathrooms: ${if (accessibilityMap["genderNeutralBathroom"]=="on") "yes" else "no"}" }
+                                    li { +"Accessible Bathrooms: ${if (accessibilityMap["accessibleBathroom"]=="on") "yes" else "no"}" }
+                                }
+
+                                h3 { +"Categories Information" }
+                                ul {
+                                    li { +"Education: ${if (categoriesMap["isEducation"] == "on") "yes" else "no"}" }
+                                    if(categoriesMap["isEducation"] == "on") {
+                                        li {
+                                            ul {
+                                                li { +"Individual: ${if (categoriesMap["individual"] == "on") "yes" else "no"}" }
+                                                li { +"Organization: ${if (categoriesMap["organization"] == "on") "yes" else "no"}" }
+                                                li { +"Post Secondary: ${if (categoriesMap["postSecondary"] == "on") "yes" else "no"}" }
+                                                li { +"Remote Online: ${if (categoriesMap["remoteOnline"] == "on") "yes" else "no"}" }
+                                                li { +"Workshops or Training: ${if (categoriesMap["workshopsOrTraining"] == "on") "yes" else "no"}" }
+                                            }
+                                        }
+                                    }
+                                    li { +"Health Care: ${if (categoriesMap["isHealthCare"] == "on") "yes" else "no"}" }
+                                    if(categoriesMap["isHealthCare"] == "on") {
+                                        li {
+                                            ul {
+                                                li { +"Health Centre: ${if (categoriesMap["healthCentre"] == "on") "yes" else "no"}" }
+                                                li { +"Counselor: ${if (categoriesMap["counselor"] == "on") "yes" else "no"}" }
+                                                li { +"Family Doctor: ${if (categoriesMap["familyDoctor"] == "on") "yes" else "no"}" }
+                                                li { +"Mental: ${if (categoriesMap["mental"] == "on") "yes" else "no"}" }
+                                                li { +"Peer Support: ${if (categoriesMap["peerSupport"] == "on") "yes" else "no"}" }
+                                                li { +"Physical: ${if (categoriesMap["physical"] == "on") "yes" else "no"}" }
+                                                li { +"Private: ${if (categoriesMap["private"] == "on") "yes" else "no"}" }
+                                                li { +"Public: ${if (categoriesMap["public"] == "on") "yes" else "no"}" }
+                                                li { +"Specialist: ${if (categoriesMap["specialist"] == "on") "yes" else "no"}" }
+                                                li { +"Gender Affirming Care: ${if (categoriesMap["trans"] == "on") "yes" else "no"}" }
+                                            }
+                                        }
+                                    }
+                                    li { +"Hospitality: ${if (categoriesMap["isHospitality"] == "on") "yes" else "no"}" }
+                                    if(categoriesMap["isHospitality"] == "on") {
+                                        li {
+                                            ul {
+                                                li { +"Bar: ${if (categoriesMap["bar"] == "on") "yes" else "no"}" }
+                                                li { +"Cafe: ${if (categoriesMap["cafe"] == "on") "yes" else "no"}" }
+                                                li { +"Catering: ${if (categoriesMap["catering"] == "on") "yes" else "no"}" }
+                                                li { +"Food Truck: ${if (categoriesMap["foodTruck"] == "on") "yes" else "no"}" }
+                                                li { +"Hotel: ${if (categoriesMap["hotel"] == "on") "yes" else "no"}" }
+                                                li { +"Restaurant: ${if (categoriesMap["restaurant"] == "on") "yes" else "no"}" }
+                                            }
+                                        }
+                                    }
+                                    li { +"Retail: ${if (categoriesMap["isRetail"] == "on") "yes" else "no"}" }
+                                    if(categoriesMap["isRetail"] == "on") {
+                                        li {
+                                            ul {
+                                                li { +"Adults Only: ${if (categoriesMap["isAdult"] == "on") "yes" else "no"}" }
+                                                li { +"Adult Products: ${if (categoriesMap["adultProducts"] == "on") "yes" else "no"}" }
+                                                li { +"Artist: ${if (categoriesMap["artist"] == "on") "yes" else "no"}" }
+                                                li { +"Clothing: ${if (categoriesMap["clothing"] == "on") "yes" else "no"}" }
+                                                li { +"Consultant: ${if (categoriesMap["consultant"] == "on") "yes" else "no"}" }
+                                                li { +"Convenience: ${if (categoriesMap["convenience"] == "on") "yes" else "no"}" }
+                                                li { +"Digital Services: ${if (categoriesMap["digitalServices"] == "on") "yes" else "no"}" }
+                                                li { +"Entertainment: ${if (categoriesMap["entertainment"] == "on") "yes" else "no"}" }
+                                                li { +"Esthetics: ${if (categoriesMap["esthetics"] == "on") "yes" else "no"}" }
+                                                li { +"Fitness Centre: ${if (categoriesMap["fitnessCentre"] == "on") "yes" else "no"}" }
+                                                li { +"Groceries: ${if (categoriesMap["groceries"] == "on") "yes" else "no"}" }
+                                                li { +"Legal: ${if (categoriesMap["legal"] == "on") "yes" else "no"}" }
+                                                li { +"Skilled Trades: ${if (categoriesMap["skilledTrades"] == "on") "yes" else "no"}" }
+                                            }
+                                        }
+                                    }
+                                    li { +"Other: ${if (categoriesMap["isOther"] == "on") "yes" else "no"}" }
+                                    if(categoriesMap["isOther"] == "on") {
+                                        li {
+                                            ul {
+                                                li { +"Employment: ${if (categoriesMap["employment"] == "on") "yes" else "no"}" }
+                                                li { +"Food Security: ${if (categoriesMap["foodSecurity"] == "on") "yes" else "no"}" }
+                                                li { +"Housing: ${if (categoriesMap["housing"] == "on") "yes" else "no"}" }
+                                                li { +"Spiritual: ${if (categoriesMap["spiritual"] == "on") "yes" else "no"}" }
+                                                li { +"Transportation: ${if (categoriesMap["transportation"] == "on") "yes" else "no"}" }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return@post
+                }
+                call.respondHtml(HttpStatusCode.BadRequest) {
+                    body{
+                        div {
+                            classes = setOf("error-message")
+
+                            h2 { +"Submission Failed" }
+                            p { +"There was a problem saving your submission." }
+                            p { +errorString }
+                        }
+                    }
+                }
+                return@post
             }
         }
     }.start(wait = true)

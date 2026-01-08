@@ -12,4 +12,6 @@ object AccessibilityInformationTable: Table("accessibility_information") {
     val accessibleBathroom = bool("accessibleBathroom").default(false)
 
     val lastUpdate = datetime("lastUpdate").defaultExpression(CurrentDateTime)
+
+    override val primaryKey = PrimaryKey(id)
 }

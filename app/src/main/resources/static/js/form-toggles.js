@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+
   // initially check the state of the toggles and show/hide subgroups accordingly
   document.querySelectorAll(".categoryToggle").forEach(toggle => {
     const parentWrapper = toggle.closest(".toggleWrapper");

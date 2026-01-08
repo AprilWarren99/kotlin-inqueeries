@@ -8,7 +8,7 @@ html{
     background-color: #0f0f0f;
 }
 
-p, td, th, h1, label, legend{
+p, ul, li, td, th, h1, h2, h3, label, legend{
     color: white;
 }
 
@@ -39,7 +39,6 @@ th, td{
 
 .categoriesSubgroup{
     margin: 0.5em 2em;
-    display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 1em;
@@ -147,6 +146,52 @@ input.toggle:disabled + label.toggleLabel .track {
 
 input.toggle:disabled + label.toggleLabel .knob {
   background: #777;
+}
+
+/* New Organization Page Styles */
+#newOrganizationFormArea {
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    max-width: 1200px;
+    padding: 1.5em;
+    background-color: #1b1b1b;
+}
+
+#newOrganizationForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#newOrganizationForm > fieldset{
+    display: flex;
+    flex-direction: column;
+    width: 100%
+}
+
+.progressBubbles{
+    display: flex;
+}
+
+.circle {
+    display: block;
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    margin: 1em;
+}
+
+.filledCircle {
+    display: block;
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    margin: 1em;
 }
 
 
