@@ -2,6 +2,7 @@ plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
     alias(libs.plugins.kotlin.jvm)
 
+    kotlin("plugin.serialization") version "2.2.20"
     // Apply the application plugin to add support for building a CLI application.
     application
 
@@ -47,6 +48,14 @@ dependencies {
     implementation("io.ktor:ktor-server-htmx:3.2.0")
     implementation("io.ktor:ktor-htmx:3.2.0")
     implementation("io.ktor:ktor-htmx-html:3.2.0")
+
+    // Supabase dependencies
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.2.3"))
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
+
+    implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 }
 
 java {

@@ -2,8 +2,10 @@ package org.example.dbHandler
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.html.insert
 import io.ktor.util.debug.useContextElementInDebugMode
+import org.example.EnvHandler
 import org.example.model.AccessibilityInformationTable
 import org.example.model.CategoriesTable
 import org.example.model.ContactTable
@@ -25,15 +27,20 @@ import kotlin.collections.component2
 import kotlin.collections.forEach
 
 class Handler (reinitDB: Boolean = false){
-
+    val dotenv = EnvHandler().getEnv()
+    // val dbConnection: Database = Database.connect(
+    //     url = dotenv["dbURL"],
+    //     user = dotenv["dbUser"],
+    //     password = dotenv["dbPassword"]
+    // )
     val dbConnection: Database = Database.connect(
-        url = System.getenv("dbURL"),
-        user = System.getenv("dbUser"),
-        password = System.getenv("dbPassword")
+        url = dotenv["SUPABASE_POSTGRES_URL"],
+        user = dotenv["SUPABASE_POSTGRES_USER"],
+        password = dotenv["SUPABASE_POSTGRES_PASSWORD"]
     )
-
     init{
         if(reinitDB) dbInitializer(dbConnection)
+        println(dbConnection.version)
     }
 
     fun dbInitializer(db: Database){

@@ -27,6 +27,7 @@ import org.example.dataClasses.Categories
 
 import org.example.dataClasses.Contact
 import org.example.dataClasses.Organization
+import org.example.dbHandler.Supabase
 import org.example.htmx.pages.addOrganizationPage
 import org.example.htmx.pages.allOrganizationsPage
 import org.example.htmx.pages.updateOrganizationPage
@@ -48,8 +49,11 @@ import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalKtorApi::class)
 fun main() {
     // Init the database so the model objects can be used
-    val dbHandler = Handler(true)
-    // val baseurl = "http://localhost:8081"
+    val dbHandler = Handler(false)
+
+    // We want to move to supabase functions, but still need to init the db with the old handler
+    // val dbHandler = Supabase()
+
 
     embeddedServer(Netty, 8081) {
 
@@ -59,7 +63,6 @@ fun main() {
                 call.respondText("Something went wrong\n$cause")
             }
         }
-
 
         routing {
             staticResources("/static", "static")
